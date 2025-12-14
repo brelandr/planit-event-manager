@@ -1,0 +1,1105 @@
+/**
+ * Public-facing styles for The WordPress Event Calendar Premium
+ */
+
+/* Calendar Wrapper */
+.twec-calendar-wrapper {
+    max-width: 100%;
+    margin: 20px 0;
+}
+
+.twec-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.twec-calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.twec-nav-btn {
+    padding: 8px 16px;
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.twec-nav-btn:hover {
+    background: #005a87;
+}
+
+.twec-calendar-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.twec-view-switcher {
+    display: flex;
+    gap: 5px;
+}
+
+.twec-view-btn {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.twec-view-btn:hover {
+    background: #e0e0e0;
+}
+
+.twec-view-btn.active {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+}
+
+.twec-today-btn {
+    padding: 8px 16px;
+    background: #46b450;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.twec-today-btn:hover {
+    background: #3a9a42;
+}
+
+.twec-calendar-loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+}
+
+.twec-calendar-rss-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Month View */
+.twec-calendar-month {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.twec-calendar-month th {
+    background: #f5f5f5;
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #ddd;
+}
+
+.twec-calendar-month td {
+    border: 1px solid #ddd;
+    padding: 0;
+    vertical-align: top;
+    height: 120px;
+    width: 14.28%;
+}
+
+.twec-calendar-day {
+    padding: 5px;
+    min-height: 110px;
+    position: relative;
+}
+
+.twec-calendar-day-number {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.twec-calendar-day.other-month {
+    background: #f9f9f9;
+    color: #999;
+}
+
+.twec-calendar-day.today {
+    background: #e8f4f8;
+}
+
+.twec-calendar-event {
+    display: block;
+    padding: 3px 6px;
+    margin: 2px 0;
+    background: #0073aa;
+    color: #fff;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.twec-calendar-event:hover {
+    background: #005a87;
+}
+
+/* Week View */
+.twec-calendar-week {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    gap: 1px;
+    background: #ddd;
+}
+
+.twec-week-hour {
+    background: #f5f5f5;
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+    border-right: 1px solid #ddd;
+}
+
+.twec-week-day {
+    background: #fff;
+    min-height: 60px;
+    padding: 5px;
+    position: relative;
+}
+
+.twec-week-day-header {
+    background: #f5f5f5;
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+}
+
+.twec-week-event {
+    position: absolute;
+    background: #0073aa;
+    color: #fff;
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* Day View */
+.twec-calendar-day-view {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 1px;
+    background: #ddd;
+}
+
+.twec-day-hour {
+    background: #f5f5f5;
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+    border-right: 1px solid #ddd;
+    min-height: 60px;
+}
+
+.twec-day-events {
+    background: #fff;
+    padding: 5px;
+    position: relative;
+    min-height: 60px;
+}
+
+/* Year View */
+.twec-calendar-year {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.twec-year-month {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.twec-year-month-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.twec-year-month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.twec-year-day {
+    padding: 5px;
+    text-align: center;
+    font-size: 11px;
+    min-height: 30px;
+}
+
+.twec-year-day.has-events {
+    background: #0073aa;
+    color: #fff;
+    cursor: pointer;
+}
+
+.twec-year-day-header {
+    font-weight: 600;
+}
+
+/* List View */
+.twec-list-wrapper {
+    margin: 20px 0;
+}
+
+.twec-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.twec-event-item {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+}
+
+.twec-event-date {
+    min-width: 80px;
+    text-align: center;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+.twec-date-day {
+    display: block;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    color: #0073aa;
+}
+
+.twec-date-month {
+    display: block;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #666;
+    margin-top: 5px;
+}
+
+.twec-event-content {
+    flex: 1;
+}
+
+.twec-event-title {
+    margin: 0 0 10px 0;
+    font-size: 20px;
+}
+
+.twec-event-title a {
+    color: #333;
+    text-decoration: none;
+}
+
+.twec-event-title a:hover {
+    color: #0073aa;
+}
+
+.twec-event-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+    flex-wrap: wrap;
+}
+
+.twec-event-cost {
+    font-weight: 600;
+    color: #0073aa;
+}
+
+.twec-event-excerpt {
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Single Event */
+.twec-single-event {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.twec-event-details {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+}
+
+.twec-event-date-time,
+.twec-event-venue,
+.twec-event-organizer {
+    margin-bottom: 20px;
+}
+
+.twec-event-venue h3,
+.twec-event-organizer h3 {
+    margin: 10px 0 5px 0;
+    font-size: 18px;
+}
+
+.twec-venue-map {
+    width: 100%;
+    height: 300px;
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.twec-event-export {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.twec-export-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-right: 10px;
+    background: #0073aa;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.twec-export-btn:hover {
+    background: #005a87;
+}
+
+.twec-event-image {
+    margin: 30px 0;
+}
+
+.twec-event-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.twec-event-description {
+    margin: 30px 0;
+    line-height: 1.8;
+}
+
+.entry-footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.twec-event-categories,
+.twec-event-tags {
+    margin-bottom: 15px;
+}
+
+.twec-event-categories a,
+.twec-event-tags a {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px 5px 5px 0;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.twec-event-categories a:hover,
+.twec-event-tags a:hover {
+    background: #0073aa;
+    color: #fff;
+}
+
+/* Archive Controls */
+.twec-archive-search {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+.twec-archive-controls {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+.twec-event-cost,
+.twec-event-website {
+    margin: 10px 0;
+}
+
+.twec-event-website a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.twec-event-website a:hover {
+    text-decoration: underline;
+}
+
+.twec-timezone {
+    font-size: 12px;
+    color: #666;
+    font-weight: normal;
+}
+
+.twec-view-link {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-right: 10px;
+    background: #0073aa;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.twec-view-link:hover {
+    background: #005a87;
+}
+
+.twec-view-link.active {
+    background: #46b450;
+    color: #fff;
+}
+
+/* Pagination */
+.twec-pagination {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.twec-pagination a,
+.twec-pagination span {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 3px;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.twec-pagination a:hover {
+    background: #0073aa;
+    color: #fff;
+}
+
+.twec-pagination .current {
+    background: #0073aa;
+    color: #fff;
+}
+
+.twec-no-events {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #666;
+}
+
+/* Photo View */
+.twec-calendar-photo-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.twec-photo-event {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.twec-photo-event.twec-featured {
+    border: 2px solid #0073aa;
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.2);
+}
+
+.twec-photo-event img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.twec-photo-placeholder {
+    width: 100%;
+    height: 200px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+.twec-photo-event-info {
+    padding: 15px;
+}
+
+.twec-photo-event-info h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.twec-photo-event-info h3 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.twec-photo-event-info h3 a:hover {
+    color: #0073aa;
+}
+
+.twec-photo-event-date {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.twec-photo-event-excerpt {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Map View */
+.twec-calendar-map-view {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+#twec-map-container,
+.twec-map-container {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.twec-map-events-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.twec-map-event-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.twec-map-event-item:hover {
+    background: #f5f5f5;
+}
+
+.twec-map-event-item h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+}
+
+.twec-map-event-item h3 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.twec-map-event-item h3 a:hover {
+    color: #0073aa;
+}
+
+.twec-map-event-venue,
+.twec-map-event-date {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Countdown Widget */
+.twec-countdown {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.twec-countdown-item {
+    text-align: center;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+    min-width: 60px;
+}
+
+.twec-countdown-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0073aa;
+    line-height: 1;
+}
+
+.twec-countdown-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    text-transform: uppercase;
+}
+
+/* Featured Events */
+.twec-calendar-event.featured {
+    background: #ff6b35;
+    font-weight: 600;
+}
+
+.twec-event-item.featured {
+    border-left: 4px solid #ff6b35;
+}
+
+@media (max-width: 768px) {
+    .twec-calendar-map-view {
+        grid-template-columns: 1fr;
+    }
+    
+    .twec-calendar-photo-view {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+/* Premium Badge */
+.twec-premium-badge {
+    display: inline-block;
+    background: #f56e28;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: 5px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.twec-premium-locked {
+    opacity: 0.7;
+    position: relative;
+    cursor: pointer;
+}
+
+.twec-premium-locked:hover {
+    opacity: 1;
+}
+
+.twec-upgrade-banner {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Widget */
+.twec-widget-events {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.twec-widget-events li {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.twec-widget-events li:last-child {
+    border-bottom: none;
+}
+
+.twec-widget-events a {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.twec-widget-date {
+    display: block;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    /* Calendar Wrapper */
+    .twec-calendar-wrapper {
+        margin: 10px 0;
+        overflow-x: hidden;
+    }
+
+    /* Header - Stack vertically on mobile */
+    .twec-calendar-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .twec-calendar-nav {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .twec-nav-btn {
+        padding: 10px 12px;
+        font-size: 13px;
+        flex: 0 0 auto;
+        min-width: 80px;
+    }
+
+    .twec-calendar-title {
+        font-size: 18px;
+        text-align: center;
+        flex: 1;
+        padding: 0 10px;
+    }
+
+    /* View Switcher - Make scrollable on mobile */
+    .twec-view-switcher {
+        width: 100%;
+        display: flex;
+        gap: 5px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 5px;
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .twec-view-switcher::-webkit-scrollbar {
+        display: none; /* Chrome, Safari */
+    }
+
+    .twec-view-btn {
+        flex: 0 0 auto;
+        padding: 10px 14px;
+        font-size: 13px;
+        white-space: nowrap;
+        min-width: 60px;
+    }
+
+    .twec-today-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    /* Month View - Make horizontally scrollable */
+    .twec-calendar-content {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -10px;
+        padding: 0 10px;
+    }
+
+    .twec-calendar-month {
+        min-width: 600px;
+        font-size: 12px;
+    }
+
+    .twec-calendar-month th {
+        padding: 8px 4px;
+        font-size: 11px;
+    }
+
+    .twec-calendar-month td {
+        height: 70px;
+        width: 14.28%;
+        font-size: 11px;
+    }
+
+    .twec-calendar-day {
+        padding: 3px;
+        min-height: 64px;
+    }
+
+    .twec-calendar-day-number {
+        font-size: 13px;
+        margin-bottom: 3px;
+    }
+
+    .twec-calendar-event {
+        padding: 2px 4px;
+        margin: 1px 0;
+        font-size: 10px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+        text-overflow: ellipsis;
+    }
+
+    /* Week View - Make horizontally scrollable */
+    .twec-calendar-week {
+        min-width: 800px;
+        grid-template-columns: 60px repeat(7, 1fr);
+    }
+
+    .twec-week-hour {
+        padding: 8px 4px;
+        font-size: 10px;
+        min-height: 50px;
+    }
+
+    .twec-week-day-header {
+        padding: 8px 4px;
+        font-size: 11px;
+        text-align: center;
+    }
+
+    .twec-week-day {
+        min-height: 50px;
+        padding: 3px;
+    }
+
+    .twec-week-event {
+        padding: 4px;
+        font-size: 10px;
+        line-height: 1.2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Day View - Stack on mobile */
+    .twec-calendar-day-view {
+        grid-template-columns: 60px 1fr;
+    }
+
+    .twec-day-hour {
+        padding: 8px 4px;
+        font-size: 11px;
+        min-height: 50px;
+    }
+
+    .twec-day-events {
+        padding: 3px;
+        min-height: 50px;
+    }
+
+    /* Year View */
+    .twec-calendar-year {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .twec-year-month {
+        padding: 8px;
+    }
+
+    .twec-year-month-title {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .twec-year-day {
+        padding: 3px;
+        font-size: 10px;
+        min-height: 25px;
+    }
+
+    /* List View */
+    .twec-event-item {
+        flex-direction: column;
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .twec-event-date {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .twec-date-day {
+        font-size: 28px;
+    }
+
+    .twec-event-title {
+        font-size: 18px;
+    }
+
+    .twec-event-meta {
+        flex-direction: column;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    /* Photo View */
+    .twec-calendar-photo-view {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .twec-photo-event img,
+    .twec-photo-placeholder {
+        height: 150px;
+    }
+
+    .twec-photo-event-info {
+        padding: 10px;
+    }
+
+    .twec-photo-event-info h3 {
+        font-size: 16px;
+    }
+
+    /* Map View */
+    .twec-calendar-map-view {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .twec-map-events-list {
+        max-height: 400px;
+    }
+
+    /* Single Event */
+    .twec-single-event {
+        padding: 15px;
+    }
+
+    .twec-event-details {
+        padding: 15px;
+    }
+
+    .twec-venue-map {
+        height: 250px;
+    }
+
+    /* Countdown */
+    .twec-countdown {
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .twec-countdown-item {
+        min-width: 50px;
+        padding: 8px;
+    }
+
+    .twec-countdown-value {
+        font-size: 20px;
+    }
+
+    .twec-countdown-label {
+        font-size: 10px;
+    }
+
+    /* RSS Link */
+    .twec-calendar-rss-link {
+        margin-top: 15px;
+    }
+
+    .twec-calendar-rss-link .button {
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .twec-calendar-month {
+        min-width: 500px;
+    }
+
+    .twec-calendar-month td {
+        height: 60px;
+    }
+
+    .twec-calendar-day {
+        min-height: 54px;
+    }
+
+    .twec-calendar-day-number {
+        font-size: 12px;
+    }
+
+    .twec-calendar-event {
+        font-size: 9px;
+        padding: 1px 3px;
+    }
+
+    .twec-calendar-week {
+        min-width: 700px;
+        grid-template-columns: 50px repeat(7, 1fr);
+    }
+
+    .twec-week-hour {
+        padding: 6px 3px;
+        font-size: 9px;
+    }
+
+    .twec-week-day-header {
+        padding: 6px 3px;
+        font-size: 10px;
+    }
+
+    .twec-calendar-year {
+        grid-template-columns: 1fr;
+    }
+
+    .twec-view-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 50px;
+    }
+
+    .twec-nav-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+        min-width: 70px;
+    }
+
+    .twec-calendar-title {
+        font-size: 16px;
+    }
+}
+

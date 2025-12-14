@@ -1,0 +1,202 @@
+/**
+ * Admin styles for The WordPress Event Calendar Premium
+ */
+
+/* Premium Badge */
+.twec-premium-badge {
+    display: inline-block;
+    background: #f56e28;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: 5px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.twec-upgrade-notice {
+    margin: 15px 0;
+    padding: 12px;
+    background: #fff;
+    border-left: 4px solid #0073aa;
+}
+
+.twec-upgrade-notice p {
+    margin: 0 0 8px 0;
+}
+
+.twec-upgrade-notice .button {
+    margin-right: 10px;
+}
+
+.twec-premium-menu-item {
+    color: #f56e28;
+}
+
+.twec-admin-settings {
+    max-width: 800px;
+}
+
+/* Event Data Meta Box - Prominent Styling */
+#twec_event_details {
+    border: 2px solid #0073aa !important;
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.15) !important;
+    margin-top: 20px !important;
+}
+
+#twec_event_details .postbox-header {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
+    border-bottom: 2px solid #005a87 !important;
+    padding: 12px 15px !important;
+}
+
+#twec_event_details .postbox-header h2 {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+#twec_event_details .postbox-header h2 span {
+    color: #ffffff !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+}
+
+#twec_event_details .handlediv {
+    color: #ffffff !important;
+}
+
+#twec_event_details .handlediv:before {
+    color: #ffffff !important;
+    font-size: 20px !important;
+}
+
+#twec_event_details .inside {
+    background: #ffffff !important;
+    padding: 20px !important;
+    margin: 0 !important;
+}
+
+/* Ensure meta box is expanded by default */
+#twec_event_details.closed .inside {
+    display: block !important;
+}
+
+#twec_event_details.closed {
+    border-left-color: #0073aa !important;
+}
+
+/* Event Details Meta Box Content */
+.twec-event-details-meta-box {
+    padding: 0;
+}
+
+.twec-event-details-meta-box .form-table {
+    margin-top: 0;
+}
+
+.twec-event-details-meta-box .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    vertical-align: top;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.twec-event-details-meta-box .form-table td {
+    padding: 15px 10px;
+    vertical-align: top;
+}
+
+.twec-event-details-meta-box input[type="date"],
+.twec-event-details-meta-box input[type="time"] {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.twec-event-details-meta-box input[type="date"]:focus,
+.twec-event-details-meta-box input[type="time"]:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+}
+
+.twec-event-details-meta-box select {
+    min-width: 250px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.twec-event-details-meta-box select:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+}
+
+.twec-event-details-meta-box .regular-text {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+}
+
+.twec-event-details-meta-box .regular-text:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+}
+
+/* Ensure meta box is visible */
+#twec_event_details {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Style for description boxes */
+.twec-event-details-meta-box .description {
+    margin-top: 8px;
+    font-style: italic;
+    color: #646970;
+    font-size: 13px;
+}
+
+/* Link styling */
+.twec-event-details-meta-box a {
+    margin-left: 10px;
+    text-decoration: none;
+    color: #0073aa;
+    font-weight: 500;
+}
+
+.twec-event-details-meta-box a:hover {
+    text-decoration: underline;
+    color: #005a87;
+}
+
+/* Highlight box at top */
+.twec-event-details-meta-box > .description {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f0f6fc 0%, #e8f4f8 100%);
+    border-left: 4px solid #0073aa;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.twec-event-details-meta-box > .description strong {
+    color: #0073aa;
+    font-size: 15px;
+}
