@@ -1,8 +1,8 @@
-# The WordPress Event Calendar
+# PlanIt Event Manager
 
 A free WordPress event calendar plugin with calendar views, event management, venues, organizers, and more. Upgrade to Premium for advanced features!
 
-**Upgrade to Premium:** [https://landtechwebdesigns.com/the-wordpress-event-calendar-premium](https://landtechwebdesigns.com/the-wordpress-event-calendar-premium)
+**Upgrade to Premium:** [https://landtechwebdesigns.com/planit-event-manager-premium](https://landtechwebdesigns.com/planit-event-manager-premium)
 
 **Author:** Land Tech Web Designs, Corp  
 **Author URI:** https://landtechwebdesigns.com  
@@ -37,7 +37,7 @@ A free WordPress event calendar plugin with calendar views, event management, ve
 - RSS Feed
 - Advanced Widgets (Featured Events, Event Series, Countdown)
 
-**Upgrade Now:** [https://landtechwebdesigns.com/the-wordpress-event-calendar-premium](https://landtechwebdesigns.com/the-wordpress-event-calendar-premium)
+**Upgrade Now:** [https://landtechwebdesigns.com/planit-event-manager-premium](https://landtechwebdesigns.com/planit-event-manager-premium)
 
 ## Installation
 
