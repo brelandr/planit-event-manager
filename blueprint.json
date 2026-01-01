@@ -23,10 +23,6 @@
 		},
 		{
 			"step": "runPHP",
-			"code": "<?php\n// Flush rewrite rules to ensure events archive works\nflush_rewrite_rules();"
-		},
-		{
-			"step": "runPHP",
 			"code": "<?php\n// Create Event Categories\n$categories = array(\n\t'Conferences' => 'Professional and business conferences',\n\t'Workshops' => 'Hands-on learning workshops',\n\t'Concerts' => 'Live music and entertainment',\n\t'Festivals' => 'Community festivals and celebrations',\n\t'Webinars' => 'Online educational webinars'\n);\n\nforeach ($categories as $name => $description) {\n\t$term = wp_insert_term($name, 'twec_event_category', array(\n\t\t'description' => $description\n\t));\n}"
 		},
 		{
