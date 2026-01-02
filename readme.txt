@@ -71,21 +71,22 @@ Data sent: The user's browser sends the site's API key and the visitor's IP addr
 
 You can preview PlanIt Event Manager instantly with WordPress Playground - no installation required!
 
-**Preview with WordPress Playground:**
-1. Visit [WordPress Playground](https://playground.wordpress.net/)
-2. Click "Import Blueprint" or use this direct link:
-   `https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/brelandr/planit-event-manager/main/blueprint.json`
-   
-   Or use the short link: [Try PlanIt Event Manager Now →](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/brelandr/planit-event-manager/main/blueprint.json)
-3. The playground will automatically install WordPress, activate the plugin, and create sample events, venues, and organizers
-4. Explore the calendar views, event management, and all features in your browser!
+**Live Preview on WordPress.org:**
+Click the "Preview" button at the top of this plugin page to launch an interactive demo with sample events, venues, and organizers already set up!
 
-The blueprint includes:
+**Or preview directly:**
+Visit [WordPress Playground](https://playground.wordpress.net/) and use this blueprint:
+```
+https://plugins.svn.wordpress.org/planit-event-manager/assets/blueprints/blueprint.json
+```
+
+The preview automatically includes:
 * 6 sample events (conferences, workshops, concerts, webinars)
 * 3 venues with full address details
 * 3 organizers with contact information
 * Event categories and tags
 * A demo page showcasing calendar and list views
+* WordPress and plugin pre-configured and ready to explore!
 
 == Installation ==
 
