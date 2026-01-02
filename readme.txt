@@ -10,9 +10,13 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 Free WordPress event calendar with calendar views, event management, venues, and organizers. The perfect event calendar solution for any website.
 
+🎯 **Try It Live:** [Preview this plugin instantly →](https://playground.wordpress.net/?blueprint-url=https://plugins.svn.wordpress.org/planit-event-manager/assets/blueprints/blueprint.json)
+
 == Description ==
 
 PlanIt Event Manager is the perfect free event calendar plugin for WordPress. This comprehensive event calendar solution makes it easy to create, manage, and display events on your website with beautiful calendar views and intuitive event management tools. Whether you're organizing conferences, workshops, concerts, or any type of event, this event calendar provides everything you need to keep your visitors informed.
+
+**🚀 Want to see it in action?** Click the preview link above to launch an interactive demo with sample events, venues, and organizers already set up - no installation required!
 
 With powerful calendar views, list displays, venue management, and seamless WordPress integration, PlanIt Event Manager is the ideal event calendar for businesses, organizations, and bloggers. The responsive design ensures your event calendar looks perfect on all devices, while the flexible customization options let you create the perfect event calendar experience for your site.
 
@@ -69,24 +73,19 @@ Data sent: The user's browser sends the site's API key and the visitor's IP addr
 
 == Try It Live ==
 
-You can preview PlanIt Event Manager instantly with WordPress Playground - no installation required!
+**👆 Click the preview link at the top of this page** to try PlanIt Event Manager instantly - no installation required!
 
-**Live Preview on WordPress.org:**
-Click the "Preview" button at the top of this plugin page to launch an interactive demo with sample events, venues, and organizers already set up!
-
-**Or preview directly:**
-Visit [WordPress Playground](https://playground.wordpress.net/) and use this blueprint:
-```
-https://plugins.svn.wordpress.org/planit-event-manager/assets/blueprints/blueprint.json
-```
-
-The preview automatically includes:
+The live preview includes:
+* WordPress and plugin pre-configured and ready to explore
 * 6 sample events (conferences, workshops, concerts, webinars)
 * 3 venues with full address details
 * 3 organizers with contact information
 * Event categories and tags
 * A demo page showcasing calendar and list views
-* WordPress and plugin pre-configured and ready to explore!
+
+**Direct Preview Links:**
+* [Preview on WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://plugins.svn.wordpress.org/planit-event-manager/assets/blueprints/blueprint.json)
+* [View on WordPress.org](https://wordpress.org/plugins/planit-event-manager/) (includes Preview button)
 
 == Installation ==
 
