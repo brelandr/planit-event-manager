@@ -12,7 +12,9 @@ Free WordPress event calendar with calendar views, event management, venues, and
 
 == Description ==
 
-🎯 **[▶️ TRY IT LIVE - PREVIEW THIS PLUGIN INSTANTLY →](https://playground.wordpress.net/?blueprint-url=https://plugins.svn.wordpress.org/planit-event-manager/assets/blueprints/blueprint.json)**
+**Try It Live - Preview This Plugin Instantly**
+
+[Preview on WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/brelandr/planit-event-manager/main/blueprint.json)
 
 Launch an interactive demo with WordPress, the plugin, and sample events already configured - no installation required! Click the link above to explore all features in your browser.
 
