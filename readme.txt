@@ -10,13 +10,15 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 Free WordPress event calendar with calendar views, event management, venues, and organizers. The perfect event calendar solution for any website.
 
-🎯 **Try It Live:** [Preview this plugin instantly →](https://playground.wordpress.net/?blueprint-url=https://plugins.svn.wordpress.org/planit-event-manager/assets/blueprints/blueprint.json)
-
 == Description ==
 
-PlanIt Event Manager is the perfect free event calendar plugin for WordPress. This comprehensive event calendar solution makes it easy to create, manage, and display events on your website with beautiful calendar views and intuitive event management tools. Whether you're organizing conferences, workshops, concerts, or any type of event, this event calendar provides everything you need to keep your visitors informed.
+🎯 **[▶️ TRY IT LIVE - PREVIEW THIS PLUGIN INSTANTLY →](https://playground.wordpress.net/?blueprint-url=https://plugins.svn.wordpress.org/planit-event-manager/assets/blueprints/blueprint.json)**
 
-**🚀 Want to see it in action?** Click the preview link above to launch an interactive demo with sample events, venues, and organizers already set up - no installation required!
+Launch an interactive demo with WordPress, the plugin, and sample events already configured - no installation required! Click the link above to explore all features in your browser.
+
+---
+
+PlanIt Event Manager is the perfect free event calendar plugin for WordPress. This comprehensive event calendar solution makes it easy to create, manage, and display events on your website with beautiful calendar views and intuitive event management tools. Whether you're organizing conferences, workshops, concerts, or any type of event, this event calendar provides everything you need to keep your visitors informed.
 
 With powerful calendar views, list displays, venue management, and seamless WordPress integration, PlanIt Event Manager is the ideal event calendar for businesses, organizations, and bloggers. The responsive design ensures your event calendar looks perfect on all devices, while the flexible customization options let you create the perfect event calendar experience for your site.
 
