@@ -1,0 +1,3 @@
+# Local secrets — never commit PATs or env files with tokens
+.github-release-token
+.env.local

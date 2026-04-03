@@ -10,8 +10,11 @@
 #   - Bump Version in your main plugin PHP (and readme/changelog if you use them), OR
 #   - Set MAIN_PLUGIN to auto-patch the header (see below).
 #
-# Token: you will be prompted to paste a PAT with `repo` scope (input is hidden).
-# Do not commit tokens or put them in this file.
+# GitHub API token (create release): use ONE of these — never commit a token.
+#   1) export GITHUB_TOKEN=ghp_...   # before running
+#   2) One-line file (chmod 600):    ~/.config/planit-event-manager-github-token
+#   3) Custom path:                  export GITHUB_TOKEN_FILE=/path/to/file
+#   4) If unset, script prompts once (hidden).
 
 set -euo pipefail
 
@@ -158,13 +161,25 @@ else
   }
 fi
 
-read -r -s -p "Paste GitHub token (repo scope; hidden): " GITHUB_TOKEN
-echo
-GITHUB_TOKEN="${GITHUB_TOKEN//$'\r'/}"
-GITHUB_TOKEN="${GITHUB_TOKEN//[[:space:]]/}"
+# Resolve PAT for GitHub REST API (not written to disk by this script).
+if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+  _token_file="${GITHUB_TOKEN_FILE:-${HOME}/.config/planit-event-manager-github-token}"
+  if [[ -f "$_token_file" ]]; then
+    IFS= read -r GITHUB_TOKEN < "$_token_file" || true
+    GITHUB_TOKEN="${GITHUB_TOKEN//$'\r'/}"
+    GITHUB_TOKEN="${GITHUB_TOKEN//[[:space:]]/}"
+  fi
+fi
+if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+  read -r -s -p "Paste GitHub token (repo scope; hidden): " GITHUB_TOKEN
+  echo
+  GITHUB_TOKEN="${GITHUB_TOKEN//$'\r'/}"
+  GITHUB_TOKEN="${GITHUB_TOKEN//[[:space:]]/}"
+fi
+unset _token_file
 
-if [[ -z "$GITHUB_TOKEN" ]]; then
-  echo "No token entered — create the release manually on GitHub for tag ${TAG}." >&2
+if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+  echo "No token — set GITHUB_TOKEN, create ~/.config/planit-event-manager-github-token, or paste when prompted." >&2
   exit 1
 fi
 
