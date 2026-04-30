@@ -4,7 +4,7 @@ Tags: event calendar, event manager, events, calendar, booking
 Requires at least: 6.2
 Tested up to: 6.9.4
 Requires PHP: 7.2
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -17,6 +17,12 @@ Free WordPress event calendar with calendar views, event management, venues, and
 [Preview on WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/brelandr/planit-event-manager/main/blueprint.json)
 
 Launch an interactive demo with WordPress, the plugin, and sample events already configured - no installation required! Click the link above to explore all features in your browser.
+
+**Try PlanIt Premium live (full Premium features)**
+
+[Launch PlanIt Event Manager Premium on InstaWP](https://app.instawp.io/launch?s=planit---demo&d=v2)
+
+Use this link to open a **temporary WordPress sandbox** with **PlanIt Premium** and the free companion pre-configured—explore week/year views, recurring events, and other Premium-only tools. (This is separate from the WordPress Playground preview above, which showcases the **free** plugin from WordPress.org.)
 
 ---
 
@@ -76,6 +82,15 @@ Data sent: The user's browser sends the site's API key and the visitor's IP addr
 * [Terms of Service](https://developers.google.com/maps/terms)
 * [Privacy Policy](https://policies.google.com/privacy)
 
+=== InstaWP (optional Premium live demo) ===
+
+What it is: **InstaWP** provides temporary WordPress sites. The **“Launch PlanIt Event Manager Premium on InstaWP”** link in this readme opens their launcher so you can try **PlanIt Premium** without installing it on your own server.
+
+Data sent: Your browser loads InstaWP; standard web data (for example IP address, referrer) may be processed per InstaWP’s policies.
+
+* [InstaWP](https://instawp.com/)
+* [Privacy Policy](https://instawp.com/privacy-policy/)
+
 == Try It Live ==
 
 **👆 Click the preview link at the top of this page** to try PlanIt Event Manager instantly - no installation required!
@@ -89,8 +104,9 @@ The live preview includes:
 * A demo page showcasing calendar and list views
 
 **Direct Preview Links:**
-* [Preview on WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/brelandr/planit-event-manager/main/blueprint.json)
-* [View on WordPress.org](https://wordpress.org/plugins/planit-event-manager/) (includes Preview button)
+* [Preview free plugin on WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/brelandr/planit-event-manager/main/blueprint.json)
+* [Launch **PlanIt Premium** live demo on InstaWP](https://app.instawp.io/launch?s=planit---demo&d=v2) (week/year views, recurring events, and more)
+* [View on WordPress.org](https://wordpress.org/plugins/planit-event-manager/) (includes Preview button for the free plugin)
 
 == Installation ==
 
@@ -143,6 +159,10 @@ No. Charges completed **before** this feature was introduced are **not** backfil
 By default those screens require the **manage_options** capability. Developers can widen access with **`twec_manage_payment_log_cap`** (**Events → Payments**) and **`twec_manage_emails_cap`** (**Events → Emails**). The latter also uses **`option_page_capability_twec_settings_group`** so customized roles can submit the Emails settings form safely.
 
 == Changelog ==
+
+= 1.0.12 =
+* Readme: **PlanIt Premium** live demo link (InstaWP) in the plugin Description, **External services**, and **Try It Live** so [wordpress.org/plugins/planit-event-manager](https://wordpress.org/plugins/planit-event-manager/) showcases both the free Playground preview and the Premium sandbox.
+* Admin: `PLANIT_PREMIUM_LIVE_DEMO_URL` plus **Premium live demo** link in **Plugins →** row meta.
 
 = 1.0.11 =
 * REST: `planit/v1/events/quick-add` — `status` uses `sanitize_callback` so only `draft` or `publish` is accepted (defaults to `draft`).

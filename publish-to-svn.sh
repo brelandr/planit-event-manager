@@ -5,7 +5,7 @@
 set -e
 
 PLUGIN_NAME="planit-event-manager"
-PLUGIN_VERSION="1.0.11"
+PLUGIN_VERSION="1.0.12"
 SVN_URL="https://plugins.svn.wordpress.org/${PLUGIN_NAME}/"
 LOCAL_SVN_DIR="../planit-event-manager-svn"
 PLUGIN_DIR="$(pwd)"
