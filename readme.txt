@@ -4,7 +4,7 @@ Tags: event calendar, event manager, events, calendar, booking
 Requires at least: 6.2
 Tested up to: 6.9.4
 Requires PHP: 7.2
-Stable tag: 1.0.12
+Stable tag: 1.0.13
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -159,6 +159,9 @@ No. Charges completed **before** this feature was introduced are **not** backfil
 By default those screens require the **manage_options** capability. Developers can widen access with **`twec_manage_payment_log_cap`** (**Events → Payments**) and **`twec_manage_emails_cap`** (**Events → Emails**). The latter also uses **`option_page_capability_twec_settings_group`** so customized roles can submit the Emails settings form safely.
 
 == Changelog ==
+
+= 1.0.13 =
+* Admin (**Plugins**): **Try Premium (live demo)** added to plugin **action links** (InstaWP), in addition to row meta — matches visibility of **Settings** / **Documentation**.
 
 = 1.0.12 =
 * Readme: **PlanIt Premium** live demo link (InstaWP) in the plugin Description, **External services**, and **Try It Live** so [wordpress.org/plugins/planit-event-manager](https://wordpress.org/plugins/planit-event-manager/) showcases both the free Playground preview and the Premium sandbox.

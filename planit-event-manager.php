@@ -3,7 +3,7 @@
  * Plugin Name: PlanIt Event Manager
  * Plugin URI: https://wordpress.org/plugins/planit-event-manager
  * Description: A free event calendar plugin with calendar views (day, month), list view, venues, organizers, and more. Upgrade to Premium for advanced features!
- * Version: 1.0.12
+ * Version: 1.0.13
  * Author: Land Tech Web Designs, Corp
  * Author URI: https://landtechwebdesigns.com
  * License: GPL-2.0+
@@ -24,7 +24,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * This plugin’s directory, basename, and file (always defined for activation hooks and path checks).
  */
-define( 'PLANIT_EVENT_MANAGER_VERSION', '1.0.12' );
+define( 'PLANIT_EVENT_MANAGER_VERSION', '1.0.13' );
 define( 'PLANIT_EVENT_MANAGER_FILE', __FILE__ );
 define( 'PLANIT_EVENT_MANAGER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PLANIT_EVENT_MANAGER_URL', plugin_dir_url( __FILE__ ) );

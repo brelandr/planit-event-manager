@@ -5,7 +5,7 @@
 set -e
 
 PLUGIN_NAME="planit-event-manager"
-PLUGIN_VERSION="1.0.12"
+PLUGIN_VERSION="1.0.13"
 SVN_URL="https://plugins.svn.wordpress.org/${PLUGIN_NAME}/"
 LOCAL_SVN_DIR="../planit-event-manager-svn"
 PLUGIN_DIR="$(pwd)"
@@ -74,6 +74,9 @@ rsync -av --progress \
     --exclude='assets' \
     --exclude='create-plugin-zip.sh' \
     --exclude='tests' \
+    --exclude='docs' \
+    --exclude='phpunit.xml' \
+    --exclude='phpunit.xml.dist' \
     --exclude='phpcs.xml' \
     --exclude='phpcs.xml.dist' \
     --exclude='*.md' \

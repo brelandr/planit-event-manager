@@ -97,9 +97,14 @@ class TWEC_Admin {
 	public function add_plugin_action_links( $links ) {
 		$settings_link = '<a href="' . esc_url( admin_url( 'edit.php?post_type=twec_event&page=twec-settings' ) ) . '">' . esc_html__( 'Settings', 'planit-event-manager' ) . '</a>';
 		$docs_link     = '<a href="' . esc_url( admin_url( 'edit.php?post_type=twec_event&page=twec-documentation' ) ) . '">' . esc_html__( 'Documentation', 'planit-event-manager' ) . '</a>';
-		$upgrade_link  = '<a href="' . esc_url( TWEC_Premium::UPGRADE_URL ) . '" target="_blank" rel="noopener" style="color: #f56e28; font-weight: 600;">' . esc_html__( 'Upgrade to Premium', 'planit-event-manager' ) . '</a>';
+		$upgrade_link  = '<a href="' . esc_url( TWEC_Premium::UPGRADE_URL ) . '" target="_blank" rel="noopener noreferrer" style="color: #f56e28; font-weight: 600;">' . esc_html__( 'Upgrade to Premium', 'planit-event-manager' ) . '</a>';
 
 		array_unshift( $links, $settings_link, $docs_link );
+
+		if ( defined( 'PLANIT_PREMIUM_LIVE_DEMO_URL' ) && is_string( PLANIT_PREMIUM_LIVE_DEMO_URL ) && '' !== PLANIT_PREMIUM_LIVE_DEMO_URL ) {
+			$links['planit_premium_live_demo'] = '<a href="' . esc_url( PLANIT_PREMIUM_LIVE_DEMO_URL ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Try Premium (live demo)', 'planit-event-manager' ) . '</a>';
+		}
+
 		$links[] = $upgrade_link;
 
 		return $links;
