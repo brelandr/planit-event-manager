@@ -1,0 +1,81 @@
+/**
+ * Quick Add event modal — embedded calendar (front end).
+ */
+
+.twec-quick-add-open {
+	margin-inline-start: 0.5rem;
+}
+
+.twec-quick-add-dialog {
+	max-width: 32rem;
+	width: calc(100% - 2rem);
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	border-radius: 6px;
+	padding: 0;
+	background: #fff;
+	color: #1d2327;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.twec-quick-add-dialog::backdrop {
+	background: rgba(0, 0, 0, 0.45);
+}
+
+.twec-quick-add-form {
+	padding: 1rem 1.25rem 1.25rem;
+}
+
+.twec-quick-add-header h2 {
+	margin: 0 0 0.75rem;
+	font-size: 1.15rem;
+	line-height: 1.3;
+}
+
+.twec-quick-add-fields .twec-quick-add-field {
+	margin: 0 0 0.75rem;
+}
+
+.twec-quick-add-fields label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.25rem;
+}
+
+.twec-quick-add-fields input[type="text"],
+.twec-quick-add-fields input[type="date"],
+.twec-quick-add-fields input[type="time"],
+.twec-quick-add-fields select {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.twec-quick-add-times {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.twec-quick-add-times .twec-quick-add-time-start,
+.twec-quick-add-times .twec-quick-add-time-end {
+	flex: 1 1 10rem;
+}
+
+.twec-quick-add-checkbox label {
+	font-weight: 400;
+}
+
+.twec-quick-add-feedback {
+	margin: 0.5rem 0;
+	color: #b32d2e;
+	font-size: 0.95rem;
+}
+
+.twec-quick-add-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+}

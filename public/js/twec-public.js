@@ -1,5 +1,5 @@
 /**
- * Public-facing JavaScript for The WordPress Event Calendar Premium
+ * Public-facing JavaScript for The Event Calendar Premium
  */
 (function($) {
     'use strict';
@@ -11,7 +11,15 @@
 
         init: function() {
             this.bindEvents();
-            this.loadCalendar();
+            // Non-interactivity calendars SSR markup in .twec-calendar-view; avoid AJAX on load so stale cached nonces do not flash an error.
+            var $wrap = $('.twec-calendar-wrapper:not([data-wp-interactive])').first();
+            var $calendarView = $wrap.find('.twec-calendar-view').first();
+            var hasSsr = $wrap.length && $calendarView.length && $.trim($calendarView.html()).length > 0;
+            if (hasSsr) {
+                $('.twec-calendar-loading').hide();
+            } else {
+                this.loadCalendar();
+            }
             this.initMaps();
         },
 
@@ -23,14 +31,7 @@
                 e.preventDefault();
                 var $btn = $(this);
                 
-                // Handle premium locked buttons
-                if ($btn.hasClass('twec-premium-locked')) {
-                    if (typeof twecData !== 'undefined' && twecData.upgradeUrl) {
-                        window.open(twecData.upgradeUrl, '_blank');
-                    }
-                    return false;
-                }
-                
+                // Premium features are simply not shown on frontend, so no need to handle locked buttons
                 self.currentView = $btn.data('view');
                 $('.twec-view-btn').removeClass('active');
                 $btn.addClass('active');
@@ -63,6 +64,22 @@
                     window.location.href = eventUrl;
                 }
             });
+
+            // Inline "Tickets" (WooCommerce): themes often neutralize :hover on links; toggle a class so rollover still shows (not a tooltip / modal).
+            $(document).on(
+                'mouseenter.twecTicketsRollover focusin.twecTicketsRollover',
+                'a.twec-wc-calendar-tickets.twec-woo-tickets-button',
+                function() {
+                    $(this).addClass('twec-tickets-link--rollover');
+                }
+            );
+            $(document).on(
+                'mouseleave.twecTicketsRollover focusout.twecTicketsRollover',
+                'a.twec-wc-calendar-tickets.twec-woo-tickets-button',
+                function() {
+                    $(this).removeClass('twec-tickets-link--rollover');
+                }
+            );
         },
 
         navigate: function(direction) {
@@ -95,35 +112,86 @@
             $('.twec-calendar-loading').show();
             $('.twec-calendar-view').empty();
 
+            var ticketCta = '0';
+            var $wrap = $('.twec-calendar-wrapper').first();
+            if ($wrap.length && typeof $wrap.attr('data-twec-ticket-cta') !== 'undefined') {
+                ticketCta = $wrap.attr('data-twec-ticket-cta') === '1' ? '1' : '0';
+            }
+
+            // Non-Interactivity (jQuery) path only: omit payload v2 so PHP sends full calendar HTML without
+            // relying on twec-calendar-grid-client hydration. Interactivity continues to fetch v2/grid from twec-calendar-view.js.
+            var ajaxData = {
+                action: 'twec_get_calendar',
+                nonce: twecData.nonce,
+                view: this.currentView,
+                date: dateStr,
+                ticket_cta: ticketCta,
+                response_format: 'compact',
+            };
+            if (typeof twecData.calPub !== 'undefined' && twecData.calPub !== '') {
+                ajaxData.cal_pub = twecData.calPub;
+            }
+            if ($wrap.length) {
+                var twecCat = $wrap.attr('data-twec-category');
+                var twecTag = $wrap.attr('data-twec-tag');
+                if (twecCat) {
+                    ajaxData.category = twecCat;
+                }
+                if (twecTag) {
+                    ajaxData.tag = twecTag;
+                }
+            }
+
             $.ajax({
                 url: twecData.ajaxUrl,
                 type: 'POST',
-                data: {
-                    action: 'twec_get_calendar',
-                    nonce: twecData.nonce,
-                    view: this.currentView,
-                    date: dateStr
-                },
+                data: ajaxData,
                 success: function(response) {
                     if (response.success) {
                         $('.twec-calendar-title').text(response.data.title);
-                        $('.twec-calendar-view').html(response.data.html);
+                        var viewHtml =
+                            typeof response.data.html === 'string' ? response.data.html : '';
+                        var pv =
+                            typeof response.data.payloadVersion !== 'undefined'
+                                ? Number(response.data.payloadVersion)
+                                : 1;
+                        if (
+                            pv >= 2 &&
+                            response.data.grid &&
+                            typeof window.twecCalendarHtmlFromStructuredGrid === 'function'
+                        ) {
+                            var built = window.twecCalendarHtmlFromStructuredGrid(response.data.grid);
+                            if (built) {
+                                viewHtml = built;
+                            }
+                        }
+                        // Server-rendered markup (escaped in PHP) or hydrated from structured grid payload.
+                        $('.twec-calendar-view').html(viewHtml);
                         self.events = response.data.events || [];
                         $('.twec-calendar-loading').hide();
-                        
-                        // Re-initialize maps if needed
-                        if (self.currentView === 'map') {
-                            self.initMaps();
+
+                        if ('map' === self.currentView) {
+                            if (response.data.mapMarkers && response.data.mapMarkers.length && typeof window.twecMapHydrateCalendarFromAjax === 'function') {
+                                window.twecMapHydrateCalendarFromAjax(response.data.mapMarkers);
+                            } else if (typeof window.twecMapInitAll === 'function') {
+                                window.twecMapInitAll();
+                            }
                         }
                     } else {
                         $('.twec-calendar-loading').hide();
-                        $('.twec-calendar-view').html('<p class="twec-error">Error: ' + (response.data && response.data.message ? response.data.message : 'Failed to load calendar') + '</p>');
+                        // Escape error message to prevent XSS
+                        var errorMessage = response.data && response.data.message ? 
+                            self.escapeHtml(response.data.message) : 
+                            'Failed to load calendar';
+                        $('.twec-calendar-view').html('<p class="twec-error">' + self.escapeHtml('Error: ') + errorMessage + '</p>');
                         console.error('Calendar AJAX error:', response);
                     }
                 },
                 error: function(xhr, status, error) {
                     $('.twec-calendar-loading').hide();
-                    $('.twec-calendar-view').html('<p class="twec-error">Error loading calendar. Please check your browser console for details.</p>');
+                    // Escape static error message (defense in depth)
+                    var errorMsg = self.escapeHtml('Error loading calendar. Please check your browser console for details.');
+                    $('.twec-calendar-view').html('<p class="twec-error">' + errorMsg + '</p>');
                     console.error('Calendar AJAX request failed:', status, error);
                     console.error('Response:', xhr.responseText);
                 }
@@ -135,6 +203,26 @@
             var month = String(date.getMonth() + 1).padStart(2, '0');
             var day = String(date.getDate()).padStart(2, '0');
             return year + '-' + month + '-' + day;
+        },
+
+        /**
+         * Escape HTML to prevent XSS attacks.
+         *
+         * @param {string} text Text to escape.
+         * @return {string} Escaped text.
+         */
+        escapeHtml: function(text) {
+            if (!text) {
+                return '';
+            }
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
         },
         
         getCalendarTitle: function(view, date) {
@@ -162,61 +250,8 @@
         },
 
         initMaps: function() {
-            if (typeof google !== 'undefined' && google.maps) {
-                // Single venue maps
-                $('.twec-venue-map').each(function() {
-                    var $map = $(this);
-                    var lat = parseFloat($map.data('lat'));
-                    var lng = parseFloat($map.data('lng'));
-                    
-                    if (lat && lng) {
-                        var map = new google.maps.Map($map[0], {
-                            zoom: 15,
-                            center: { lat: lat, lng: lng },
-                            mapTypeId: 'roadmap'
-                        });
-                        
-                        new google.maps.Marker({
-                            position: { lat: lat, lng: lng },
-                            map: map
-                        });
-                    }
-                });
-                
-                // Map view
-                if (typeof twecMapMarkers !== 'undefined' && twecMapMarkers.length > 0) {
-                    var mapContainer = document.getElementById('twec-map-container');
-                    if (mapContainer) {
-                        var bounds = new google.maps.LatLngBounds();
-                        var map = new google.maps.Map(mapContainer, {
-                            mapTypeId: 'roadmap'
-                        });
-                        
-                        twecMapMarkers.forEach(function(marker) {
-                            var position = { lat: marker.lat, lng: marker.lng };
-                            bounds.extend(position);
-                            
-                            var mapMarker = new google.maps.Marker({
-                                position: position,
-                                map: map,
-                                title: marker.title
-                            });
-                            
-                            var infoWindow = new google.maps.InfoWindow({
-                                content: '<div><h3><a href="' + marker.url + '">' + marker.title + '</a></h3>' +
-                                         (marker.venue ? '<p>' + marker.venue + '</p>' : '') +
-                                         (marker.date ? '<p>' + marker.date + '</p>' : '') +
-                                         '</div>'
-                            });
-                            
-                            mapMarker.addListener('click', function() {
-                                infoWindow.open(map, mapMarker);
-                            });
-                        });
-                        
-                        map.fitBounds(bounds);
-                    }
-                }
+            if (typeof window.twecMapInitAll === 'function') {
+                window.twecMapInitAll();
             }
         },
         
@@ -230,7 +265,8 @@
                     var distance = eventDate - now;
                     
                     if (distance < 0) {
-                        $countdown.html('<p>' + TWEC.countdownExpired || 'Event has started' + '</p>');
+                        var expiredText = TWEC.countdownExpired || 'Event has started';
+                        $countdown.html('<p>' + TWEC.escapeHtml(expiredText) + '</p>');
                         return;
                     }
                     
@@ -252,13 +288,13 @@
     };
 
     $(document).ready(function() {
-        // Initialize if calendar wrapper exists
-        if ($('.twec-calendar-wrapper').length) {
-            var $wrapper = $('.twec-calendar-wrapper');
-            TWEC.currentView = $wrapper.data('view') || 'month';
-            var currentDateStr = $wrapper.data('current-date');
-            if (currentDateStr) {
-                TWEC.currentDate = new Date(currentDateStr);
+        // jQuery fallback: first non-Interactivity calendar on the page (skip wrappers with data-wp-interactive).
+        var $wrapper = $( '.twec-calendar-wrapper:not([data-wp-interactive])' ).first();
+        if ( $wrapper.length ) {
+            TWEC.currentView = $wrapper.data( 'view' ) || 'month';
+            var currentDateStr = $wrapper.data( 'current-date' );
+            if ( currentDateStr ) {
+                TWEC.currentDate = new Date( currentDateStr );
             }
             TWEC.init();
         }
@@ -271,6 +307,17 @@
         // Initialize countdown timers
         TWEC.initCountdown();
     });
+
+    window.TWEC = TWEC;
+    window.twecAfterCalendarLoad = function (view) {
+        if (typeof TWEC === 'undefined' || !TWEC.initMaps) {
+            return;
+        }
+        TWEC.currentView = view || TWEC.currentView;
+        if (typeof google !== 'undefined' && google.maps) {
+            TWEC.initMaps();
+        }
+    };
 
 })(jQuery);
 

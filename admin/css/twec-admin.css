@@ -1,5 +1,5 @@
 /**
- * Admin styles for The WordPress Event Calendar Premium
+ * Admin styles for The Event Calendar
  */
 
 /* Premium Badge */
@@ -199,4 +199,46 @@
 .twec-event-details-meta-box > .description strong {
     color: #0073aa;
     font-size: 15px;
+}
+
+/* In-admin documentation (Events → Documentation) */
+.wrap.twec-docs .twec-docs-panel {
+    max-width: 920px;
+    margin-top: 16px;
+}
+
+.wrap.twec-docs .twec-docs-panel h2 {
+    margin-top: 1.6em;
+    padding-top: 4px;
+    border-top: 1px solid #dcdcde;
+}
+
+.wrap.twec-docs .twec-docs-panel h2:first-child,
+.wrap.twec-docs .twec-docs-panel > .notice + h2 {
+    border-top: 0;
+    margin-top: 0;
+}
+
+.wrap.twec-docs .twec-docs-panel h3 {
+    margin-top: 1.25em;
+}
+
+.wrap.twec-docs .twec-docs-panel ul.twec-docs-list,
+.wrap.twec-docs .twec-docs-panel ul {
+    list-style: disc;
+    margin-left: 1.25em;
+}
+
+.wrap.twec-docs .twec-docs-panel code {
+    font-size: 13px;
+}
+
+.wrap.twec-docs .twec-docs-premium-banner {
+    max-width: 920px;
+    margin: 14px 0 18px;
+}
+
+.wrap.twec-docs .notice.inline {
+    max-width: 920px;
+    margin-left: 0;
 }

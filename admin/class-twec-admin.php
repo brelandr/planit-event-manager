@@ -101,8 +101,9 @@ class TWEC_Admin {
 
 		array_unshift( $links, $settings_link, $docs_link );
 
-		if ( defined( 'PLANIT_PREMIUM_LIVE_DEMO_URL' ) && is_string( PLANIT_PREMIUM_LIVE_DEMO_URL ) && '' !== PLANIT_PREMIUM_LIVE_DEMO_URL ) {
-			$links['planit_premium_live_demo'] = '<a href="' . esc_url( PLANIT_PREMIUM_LIVE_DEMO_URL ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Try Premium (live demo)', 'planit-event-manager' ) . '</a>';
+		$demo_url = class_exists( 'TWEC_Premium', false ) ? TWEC_Premium::get_premium_live_demo_url() : '';
+		if ( '' !== $demo_url ) {
+			$links['planit_premium_live_demo'] = '<a href="' . esc_url( $demo_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Try Premium Version', 'planit-event-manager' ) . '</a>';
 		}
 
 		$links[] = $upgrade_link;
@@ -130,12 +131,45 @@ class TWEC_Admin {
 			$wporg_link = '<a href="' . esc_url( 'https://wordpress.org/plugins/planit-event-manager/' ) . '" target="_blank" rel="noopener">' . esc_html__( 'WordPress.org plugin page', 'planit-event-manager' ) . '</a>';
 			$links[]   = $docs_link;
 			$links[]   = $wporg_link;
-			if ( defined( 'PLANIT_PREMIUM_LIVE_DEMO_URL' ) && is_string( PLANIT_PREMIUM_LIVE_DEMO_URL ) && '' !== PLANIT_PREMIUM_LIVE_DEMO_URL ) {
-				$links[] = '<a href="' . esc_url( PLANIT_PREMIUM_LIVE_DEMO_URL ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Premium live demo (InstaWP)', 'planit-event-manager' ) . '</a>';
+			$demo_url_row = class_exists( 'TWEC_Premium', false ) ? TWEC_Premium::get_premium_live_demo_url() : '';
+			if ( '' !== $demo_url_row ) {
+				$links[] = '<a href="' . esc_url( $demo_url_row ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Try Premium Version', 'planit-event-manager' ) . '</a>';
 			}
 		}
 
 		return $links;
+	}
+
+	/**
+	 * On Plugins screen, show Premium CTA buttons (Upgrade, Learn More, Try Premium Version).
+	 *
+	 * @return void
+	 */
+	public function render_plugins_screen_premium_cta() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'plugins' !== $screen->id ) {
+			return;
+		}
+		if ( ! class_exists( 'TWEC_Premium', false ) ) {
+			return;
+		}
+		$upgrade_url = TWEC_Premium::UPGRADE_URL;
+		$demo_url    = TWEC_Premium::get_premium_live_demo_url();
+		?>
+		<div class="notice notice-info twec-plugins-premium-cta" style="margin-top: 12px; margin-bottom: 12px; padding: 12px 14px;">
+			<p style="margin: 0 0 10px 0;"><strong><?php esc_html_e( 'PlanIt Event Manager Premium', 'planit-event-manager' ); ?></strong> — <?php esc_html_e( 'Unlock week/year views, recurring events, imports, and more—or try a full Premium sandbox in your browser.', 'planit-event-manager' ); ?></p>
+			<p style="margin: 0;">
+				<a class="button button-primary" href="<?php echo esc_url( $upgrade_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Upgrade to Premium', 'planit-event-manager' ); ?></a>
+				<a class="button" href="<?php echo esc_url( $upgrade_url ); ?>" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;"><?php esc_html_e( 'Learn More', 'planit-event-manager' ); ?></a>
+				<?php if ( '' !== $demo_url ) : ?>
+					<a class="button" href="<?php echo esc_url( $demo_url ); ?>" target="_blank" rel="noopener noreferrer" style="margin-left: 8px;"><?php esc_html_e( 'Try Premium Version', 'planit-event-manager' ); ?></a>
+				<?php endif; ?>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**

@@ -1,0 +1,8 @@
+# PlanIt Event Manager (free) — release manifest
+# Bump VERSION with each WordPress.org release; keep in sync with readme Stable tag and plugin header.
+
+VERSION=1.0.15
+STABLE_TAG=1.0.15
+TESTED_UP_TO=7.0
+REQUIRES_PHP_MIN=7.4
+REQUIRES_AT_LEAST=6.2

@@ -3,7 +3,7 @@
  * Plugin Name: PlanIt Event Manager
  * Plugin URI: https://wordpress.org/plugins/planit-event-manager
  * Description: A free event calendar plugin with calendar views (day, month), list view, venues, organizers, and more. Upgrade to Premium for advanced features!
- * Version: 1.0.13
+ * Version: 1.0.15
  * Author: Land Tech Web Designs, Corp
  * Author URI: https://landtechwebdesigns.com
  * License: GPL-2.0+
@@ -11,7 +11,8 @@
  * Text Domain: planit-event-manager
  * Domain Path: /languages
  * Requires at least: 6.2
- * Requires PHP: 7.2
+ * Requires PHP: 7.4
+ * Tested up to: 7.0
  *
  * @package The_Event_Calendar
  */
@@ -22,13 +23,119 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
+ * Duplicate-install guard: uploading a second zip often creates `planit-event-manager-1`, etc.
+ * Loading two copies in one request fatals on `Cannot redeclare twec_activate()` and similar.
+ *
+ * Prefer the canonical folder `planit-event-manager/` when it exists on disk so load order
+ * (plugins may run `planit-event-manager-1` before `planit-event-manager`) does not deactivate the real copy.
+ */
+$planit_event_manager_dup_base          = plugin_basename( __FILE__ );
+$planit_event_manager_canonical_base    = 'planit-event-manager/planit-event-manager.php';
+$planit_event_manager_canonical_path    = '';
+if ( defined( 'WP_PLUGIN_DIR' ) && constant( 'WP_PLUGIN_DIR' ) ) {
+	$planit_event_manager_canonical_path = rtrim( (string) constant( 'WP_PLUGIN_DIR' ), '/' ) . '/planit-event-manager/planit-event-manager.php';
+}
+
+$planit_event_manager_is_duplicate_folder = false;
+if (
+	'' !== $planit_event_manager_canonical_path
+	&& is_readable( $planit_event_manager_canonical_path )
+	&& $planit_event_manager_canonical_base !== $planit_event_manager_dup_base
+	&& function_exists( 'is_plugin_active' )
+	&& is_plugin_active( $planit_event_manager_canonical_base )
+) {
+	$planit_event_manager_canonical_rp = realpath( $planit_event_manager_canonical_path );
+	$planit_event_manager_this_rp      = realpath( __FILE__ );
+	if ( $planit_event_manager_canonical_rp && $planit_event_manager_this_rp && $planit_event_manager_canonical_rp !== $planit_event_manager_this_rp ) {
+		$planit_event_manager_is_duplicate_folder = true;
+	}
+}
+
+$planit_event_manager_is_secondary_copy = (
+	defined( 'PLANIT_EVENT_MANAGER_BOOTSTRAP_DONE' ) && PLANIT_EVENT_MANAGER_BOOTSTRAP_DONE
+);
+
+if ( $planit_event_manager_is_secondary_copy || $planit_event_manager_is_duplicate_folder ) {
+	register_activation_hook(
+		__FILE__,
+		static function () use ( $planit_event_manager_dup_base ) {
+			if ( ! function_exists( 'deactivate_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			deactivate_plugins( $planit_event_manager_dup_base, true );
+			set_transient(
+				'planit_event_manager_duplicate_' . md5( $planit_event_manager_dup_base ),
+				'1',
+				120
+			);
+		}
+	);
+
+	add_action(
+		'plugins_loaded',
+		static function () use ( $planit_event_manager_dup_base ) {
+			if ( ! function_exists( 'is_plugin_active' ) || ! function_exists( 'deactivate_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			if ( ! is_plugin_active( $planit_event_manager_dup_base ) ) {
+				return;
+			}
+			deactivate_plugins( $planit_event_manager_dup_base, true );
+			set_transient(
+				'planit_event_manager_duplicate_' . md5( $planit_event_manager_dup_base ),
+				'1',
+				120
+			);
+		},
+		0
+	);
+
+	add_action(
+		'admin_notices',
+		static function () use ( $planit_event_manager_dup_base ) {
+			if ( ! current_user_can( 'activate_plugins' ) ) {
+				return;
+			}
+			$tkey = 'planit_event_manager_duplicate_' . md5( $planit_event_manager_dup_base );
+			if ( ! get_transient( $tkey ) ) {
+				return;
+			}
+			delete_transient( $tkey );
+			echo '<div class="notice notice-warning is-dismissible"><p>';
+			echo esc_html(
+				sprintf(
+					/* translators: %s: plugin folder file basename (e.g. planit-event-manager-1/planit-event-manager.php) */
+					__( 'PlanIt Event Manager is already installed from another folder. This duplicate (%s) was deactivated. Delete the extra folder under Plugins and keep a single copy.', 'planit-event-manager' ),
+					$planit_event_manager_dup_base
+				)
+			);
+			echo '</p></div>';
+		}
+	);
+
+	return;
+}
+
+define( 'PLANIT_EVENT_MANAGER_BOOTSTRAP_DONE', true );
+
+/**
  * This plugin’s directory, basename, and file (always defined for activation hooks and path checks).
  */
-define( 'PLANIT_EVENT_MANAGER_VERSION', '1.0.13' );
-define( 'PLANIT_EVENT_MANAGER_FILE', __FILE__ );
-define( 'PLANIT_EVENT_MANAGER_DIR', plugin_dir_path( __FILE__ ) );
-define( 'PLANIT_EVENT_MANAGER_URL', plugin_dir_url( __FILE__ ) );
-define( 'PLANIT_EVENT_MANAGER_BASENAME', plugin_basename( __FILE__ ) );
+if ( ! defined( 'PLANIT_EVENT_MANAGER_VERSION' ) ) {
+	define( 'PLANIT_EVENT_MANAGER_VERSION', '1.0.15' );
+}
+if ( ! defined( 'PLANIT_EVENT_MANAGER_FILE' ) ) {
+	define( 'PLANIT_EVENT_MANAGER_FILE', __FILE__ );
+}
+if ( ! defined( 'PLANIT_EVENT_MANAGER_DIR' ) ) {
+	define( 'PLANIT_EVENT_MANAGER_DIR', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'PLANIT_EVENT_MANAGER_URL' ) ) {
+	define( 'PLANIT_EVENT_MANAGER_URL', plugin_dir_url( __FILE__ ) );
+}
+if ( ! defined( 'PLANIT_EVENT_MANAGER_BASENAME' ) ) {
+	define( 'PLANIT_EVENT_MANAGER_BASENAME', plugin_basename( __FILE__ ) );
+}
 
 if ( ! defined( 'PLANIT_PREMIUM_LIVE_DEMO_URL' ) ) {
 	define(
@@ -38,6 +145,12 @@ if ( ! defined( 'PLANIT_PREMIUM_LIVE_DEMO_URL' ) ) {
 }
 
 require_once PLANIT_EVENT_MANAGER_DIR . 'includes/planit-event-manager-helpers.php';
+
+/**
+ * Calendar + event list blocks always register from the org (free) package — even when Premium is active.
+ */
+require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-blocks-core.php';
+TWEC_Blocks_Core::init();
 
 /**
  * Whether PlanIt Event Manager Premium is active (site or network).

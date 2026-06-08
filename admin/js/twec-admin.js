@@ -1,5 +1,5 @@
 /**
- * Admin JavaScript for The WordPress Event Calendar Premium
+ * Admin JavaScript for The Event Calendar Premium
  */
 (function($) {
     'use strict';
@@ -35,6 +35,26 @@
                 $eventMetaBox.find('.inside').show();
             }
         }, 100);
+
+        // Handle recurring event checkbox (shows Repeat / Every / end controls in the sidebar meta box).
+        $('#twec_is_recurring').on('change', function() {
+            $('#twec-recurring-options').toggle($(this).is(':checked'));
+        }).trigger('change');
+
+        // Handle recurrence type change
+        $('#twec_recurrence_type').on('change', function() {
+            var type = $(this).val();
+            var text = type === 'daily' ? 'day(s)' : (type === 'weekly' ? 'week(s)' : (type === 'monthly' ? 'month(s)' : 'year(s)'));
+            $('#twec-recurrence-interval-text').text(text);
+        }).trigger('change');
+
+        // Handle delete test events form confirmation
+        $('#twec-delete-test-events-form').on('submit', function(e) {
+            if (!confirm(twecAdminData.deleteTestEventsConfirm || 'Are you sure you want to delete all test events? This action cannot be undone.')) {
+                e.preventDefault();
+                return false;
+            }
+        });
     });
 
 })(jQuery);

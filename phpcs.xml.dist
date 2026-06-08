@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PlanIt Free CI" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/master/phpcs.xsd">
+	<description>WordPress CS for CI — wedge: PHP files that currently have zero PHPCS *errors* (warnings ignored for exit). Expand the list as more files are cleaned.</description>
+
+	<rule ref="WordPress">
+		<exclude name="WordPress.WP.I18n.TextDomainMismatch"/>
+	</rule>
+
+	<file>admin/class-twec-dashboard.php</file>
+	<file>admin/class-twec-meta-boxes.php</file>
+	<file>includes/class-twec-activator.php</file>
+	<file>includes/class-twec-blocks-core.php</file>
+	<file>includes/class-twec-breadcrumbs.php</file>
+	<file>includes/class-twec-custom-fields.php</file>
+	<file>includes/class-twec-deactivator.php</file>
+	<file>includes/class-twec-debug.php</file>
+	<file>includes/class-twec-email-templates.php</file>
+	<file>includes/class-twec-i18n.php</file>
+	<file>includes/class-twec-importer.php</file>
+	<file>includes/class-twec-loader.php</file>
+	<file>includes/class-twec-permalinks.php</file>
+	<file>includes/class-twec-premium.php</file>
+	<file>includes/class-twec-privacy.php</file>
+	<file>includes/class-twec-recurring.php</file>
+	<file>includes/class-twec-rest.php</file>
+	<file>includes/class-twec-search.php</file>
+	<file>includes/class-twec-seo.php</file>
+	<file>includes/class-twec-settings.php</file>
+	<file>includes/class-twec-shortcodes.php</file>
+	<file>includes/class-twec-view-counter.php</file>
+	<file>includes/class-twec-woo-series-pass.php</file>
+	<file>includes/class-twec.php</file>
+	<file>includes/twec-interactivity.php</file>
+	<file>includes/twec-premium-compat.php</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+
+	<arg name="colors"/>
+	<arg value="p"/>
+	<arg name="report-width" value="120"/>
+
+	<config name="ignore_warnings_on_exit" value="1"/>
+</ruleset>

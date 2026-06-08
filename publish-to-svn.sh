@@ -4,10 +4,13 @@
 
 set -e
 
+# Local WordPress.org SVN checkout and sibling plugin layout
+PLANIT_DEV_ROOT="/Users/randy/wordpress-plugins/WordpressDev/planit"
+
 PLUGIN_NAME="planit-event-manager"
-PLUGIN_VERSION="1.0.13"
+PLUGIN_VERSION="1.0.15"
 SVN_URL="https://plugins.svn.wordpress.org/${PLUGIN_NAME}/"
-LOCAL_SVN_DIR="../planit-event-manager-svn"
+LOCAL_SVN_DIR="${PLANIT_DEV_ROOT}/planit-event-manager-svn"
 PLUGIN_DIR="$(pwd)"
 
 echo "=========================================="
@@ -38,9 +41,10 @@ if [ -d "${LOCAL_SVN_DIR}/.svn" ]; then
     svn update
 else
     echo "  Checking out SVN repository..."
-    cd "$(dirname ${LOCAL_SVN_DIR})"
-    svn checkout "${SVN_URL}" "${PLUGIN_NAME}-svn"
-    cd "${PLUGIN_NAME}-svn"
+    mkdir -p "$(dirname "${LOCAL_SVN_DIR}")"
+    cd "$(dirname "${LOCAL_SVN_DIR}")"
+    svn checkout "${SVN_URL}" "$(basename "${LOCAL_SVN_DIR}")"
+    cd "${LOCAL_SVN_DIR}"
 fi
 
 echo ""

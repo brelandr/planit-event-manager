@@ -2,9 +2,9 @@
 Contributors: brelandr
 Tags: event calendar, event manager, events, calendar, booking
 Requires at least: 6.2
-Tested up to: 6.9.4
-Requires PHP: 7.2
-Stable tag: 1.0.13
+Tested up to: 7.0
+Requires PHP: 7.4
+Stable tag: 1.0.15
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -159,6 +159,16 @@ No. Charges completed **before** this feature was introduced are **not** backfil
 By default those screens require the **manage_options** capability. Developers can widen access with **`twec_manage_payment_log_cap`** (**Events → Payments**) and **`twec_manage_emails_cap`** (**Events → Emails**). The latter also uses **`option_page_capability_twec_settings_group`** so customized roles can submit the Emails settings form safely.
 
 == Changelog ==
+
+= 1.0.15 =
+* New **PlanIt Compact Event List** block and `[twec_compact_list]` shortcode — dense table with date, event name, and category; click opens a preview popup (default) or the event page.
+* Block editor: calendar, event list, and compact list blocks always register from the free plugin (stable when Premium is active); live ServerSideRender previews in the editor.
+* Front end: responsive calendar and list CSS (overflow and theme width fixes); guard against duplicate plugin folders on re-upload (`planit-event-manager-1`, etc.).
+* Debug: calendar query logging gated by `WP_DEBUG` and `WP_DEBUG_LOG` only.
+* Zip packaging: `create-plugin-zip.sh` stages files under a `planit-event-manager/` top-level folder for correct WordPress installs.
+
+= 1.0.14 =
+* Readme: **Tested up to: 7.0** (WordPress 7.0). **Requires PHP: 7.4** (aligns with WordPress 7.0 dropping PHP 7.2/7.3). Plugin header updated accordingly.
 
 = 1.0.13 =
 * Admin (**Plugins**): **Try Premium (live demo)** added to plugin **action links** (InstaWP), in addition to row meta — matches visibility of **Settings** / **Documentation**.
