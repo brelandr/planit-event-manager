@@ -4,7 +4,7 @@ Tags: event calendar, event manager, events, calendar, booking
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.16
+Stable tag: 1.0.17
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -48,6 +48,7 @@ Visit [https://landtechwebdesigns.com/planit-event-manager-premium](https://land
 * **Event Calendar Widget:** Upcoming events widget for sidebars to showcase your event calendar
 * **Event Calendar Shortcodes:** Easy calendar and list embedding anywhere on your site
 * **Event Calendar Search & Filter:** Powerful search and filtering to help visitors find events quickly
+* **PlanIt Event Search (AI, opt-in):** Natural-language event search block and shortcode for visitors when AI is enabled under Events → Settings
 * **Featured Images:** Add beautiful images to events in your event calendar
 
 = Premium Features (Available in Premium Version) =
@@ -95,7 +96,7 @@ Data sent: Your browser loads InstaWP; standard web data (for example IP address
 
 What it is: When you enable AI under **Events → Settings → AI**, PlanIt uses WordPress 7.0’s **WP AI Client** and your site’s configured **connector** (for example OpenAI or Anthropic via **Settings → Connectors**). PlanIt does not ship API keys.
 
-Data sent: Prompt text and event context (titles, dates, venue names, categories, excerpts) for admin assist; for the public Event Assistant block, upcoming event titles/dates/URLs and the visitor’s question. Visitor IP is used locally for rate limiting only and is not sent to the AI provider. RSVP emails, payment data, and attendee PII are not sent to AI providers.
+Data sent: Prompt text and event context (titles, dates, venue names, categories, excerpts) for admin assist; for the public Event Assistant and Event Search blocks, upcoming event titles/dates/URLs and the visitor’s question or search phrase. Visitor IP is used locally for rate limiting only and is not sent to the AI provider. RSVP emails, payment data, and attendee PII are not sent to AI providers.
 
 When: Only when you opt in via settings and a connector is configured.
 
@@ -170,6 +171,13 @@ No. Charges completed **before** this feature was introduced are **not** backfil
 By default those screens require the **manage_options** capability. Developers can widen access with **`twec_manage_payment_log_cap`** (**Events → Payments**) and **`twec_manage_emails_cap`** (**Events → Emails**). The latter also uses **`option_page_capability_twec_settings_group`** so customized roles can submit the Emails settings form safely.
 
 == Changelog ==
+
+= 1.0.17 =
+* **PlanIt Event Search**: Natural-language event search block, `[twec_event_search]` shortcode, and `POST planit/v1/ai/event-search` REST route with AI matching plus keyword fallback when no AI hits.
+* **Security**: Shared nonce verification helpers across admin saves, imports, exports, and AJAX; late escaping on outputs; inline JavaScript replaced with enqueued assets (RSVP, submission form, RRULE preview, map markers).
+* **API**: `wp_safe_remote_post` for Stripe/PayPal; RSVP REST route arg schemas; brief transients for AI public queries and event search.
+* **Performance**: Admin transients for venue/organizer dropdowns, WooCommerce ticket event lists, and dashboard week widget with cache invalidation on save.
+* **Admin**: Bulk AI publish prep, start/end date filters on the events list, Event Data metabox scroll cap; public assistant setting enables Event Assistant and Event Search on the front end.
 
 = 1.0.16 =
 * **WordPress 7.0 AI integration** (opt-in under Events → Settings → AI): Abilities API (`planit/*`), admin editor assist panel, command palette commands, public Event Assistant block with rate limiting.

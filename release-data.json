@@ -1,7 +1,7 @@
 {
-  "tag_name": "v1.0.15",
-  "name": "v1.0.15 - Compact Event List & Block Editor",
-  "body": "## PlanIt Event Manager v1.0.15\n\n### New\n* **PlanIt Compact Event List** block and `[twec_compact_list]` shortcode — table with date, event name, and category; click opens preview popup or event page.\n\n### Improved\n* Block editor: core blocks (calendar, event list, compact list) always load from the free plugin, even with Premium active; live SSR previews in the editor.\n* Responsive calendar/list CSS for narrow themes.\n* Duplicate plugin folder guard on re-upload.\n* Calendar debug logging only when `WP_DEBUG` and `WP_DEBUG_LOG` are enabled.\n* Zip script uses correct `planit-event-manager/` top-level folder layout.",
+  "tag_name": "v1.0.17",
+  "name": "v1.0.17 - Event Search & Security Hardening",
+  "body": "## PlanIt Event Manager v1.0.17\n\n### New\n* **PlanIt Event Search** — Gutenberg block, `[twec_event_search]` shortcode, and `POST planit/v1/ai/event-search` REST route. Visitors enter natural-language phrases; AI returns matching upcoming events with a keyword fallback.\n\n### Security\n* Nonce verification helpers across admin saves, imports, exports, and AJAX.\n* Late escaping on outputs; inline JS moved to enqueued assets (RSVP, submission form, RRULE preview, map markers).\n* `wp_safe_remote_post` for Stripe/PayPal; RSVP REST route arg schemas.\n\n### Improved\n* Admin transients for venue/organizer dropdowns and dashboard widget.\n* Bulk AI publish prep, events list date filters, Event Data metabox scroll cap.\n* Public assistant setting covers Event Assistant and Event Search blocks.",
   "draft": false,
   "prerelease": false
 }

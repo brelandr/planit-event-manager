@@ -8,7 +8,7 @@ set -e
 PLANIT_DEV_ROOT="/Users/randy/wordpress-plugins/WordpressDev/planit"
 
 PLUGIN_NAME="planit-event-manager"
-PLUGIN_VERSION="1.0.15"
+PLUGIN_VERSION="1.0.17"
 SVN_URL="https://plugins.svn.wordpress.org/${PLUGIN_NAME}/"
 LOCAL_SVN_DIR="${PLANIT_DEV_ROOT}/planit-event-manager-svn"
 PLUGIN_DIR="$(pwd)"
