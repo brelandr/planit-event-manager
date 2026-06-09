@@ -13,17 +13,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template variables are local scope, not globals
-$settings                = get_option( 'twec_settings', array() );
-$hide_past_events        = isset( $settings['hide_past_events'] ) ? $settings['hide_past_events'] : 'no';
-$events_per_page         = isset( $settings['events_per_page'] ) ? $settings['events_per_page'] : 10;
-$google_maps_api_key     = isset( $settings['google_maps_api_key'] ) ? $settings['google_maps_api_key'] : '';
-$seo_json_ld             = isset( $settings['seo_json_ld'] ) ? $settings['seo_json_ld'] : 'yes';
-$seo_json_ld_graph       = isset( $settings['seo_json_ld_graph'] ) ? $settings['seo_json_ld_graph'] : 'no';
-$seo_og                  = isset( $settings['seo_og'] ) ? $settings['seo_og'] : 'yes';
-$hierarchical_urls       = isset( $settings['hierarchical_event_urls'] ) ? $settings['hierarchical_event_urls'] : 'no';
-$seo_breadcrumb_json     = isset( $settings['seo_breadcrumb_json_ld'] ) ? $settings['seo_breadcrumb_json_ld'] : 'yes';
-$calendar_interactivity      = isset( $settings['calendar_interactivity'] ) ? $settings['calendar_interactivity'] : 'yes';
-$compact_list_interactivity  = isset( $settings['compact_list_interactivity'] ) ? $settings['compact_list_interactivity'] : '';
+$settings                   = get_option( 'twec_settings', array() );
+$hide_past_events           = isset( $settings['hide_past_events'] ) ? $settings['hide_past_events'] : 'no';
+$events_per_page            = isset( $settings['events_per_page'] ) ? $settings['events_per_page'] : 10;
+$google_maps_api_key        = isset( $settings['google_maps_api_key'] ) ? $settings['google_maps_api_key'] : '';
+$seo_json_ld                = isset( $settings['seo_json_ld'] ) ? $settings['seo_json_ld'] : 'yes';
+$seo_json_ld_graph          = isset( $settings['seo_json_ld_graph'] ) ? $settings['seo_json_ld_graph'] : 'no';
+$seo_og                     = isset( $settings['seo_og'] ) ? $settings['seo_og'] : 'yes';
+$hierarchical_urls          = isset( $settings['hierarchical_event_urls'] ) ? $settings['hierarchical_event_urls'] : 'no';
+$seo_breadcrumb_json        = isset( $settings['seo_breadcrumb_json_ld'] ) ? $settings['seo_breadcrumb_json_ld'] : 'yes';
+$calendar_interactivity     = isset( $settings['calendar_interactivity'] ) ? $settings['calendar_interactivity'] : 'yes';
+$compact_list_interactivity = isset( $settings['compact_list_interactivity'] ) ? $settings['compact_list_interactivity'] : '';
 if ( '' === $compact_list_interactivity ) {
 	$compact_list_interactivity = $calendar_interactivity;
 }

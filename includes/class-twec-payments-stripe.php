@@ -326,8 +326,8 @@ class TWEC_Payments_Stripe {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function rest_create_checkout( $request ) {
-		$nonce = (string) $request->get_header( 'X-WP-Nonce' );
-		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+		$nonce = sanitize_text_field( (string) $request->get_header( 'X-WP-Nonce' ) );
+		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
 			return new WP_Error( 'rest_cookie_invalid', __( 'Invalid or missing REST nonce. Refresh the page and try again.', 'planit-event-manager' ), array( 'status' => 403 ) );
 		}
 		if ( 'stripe' !== self::get_settings()['payment_gateway'] ) {
@@ -412,16 +412,26 @@ class TWEC_Payments_Stripe {
 			),
 		);
 		$body    = self::form_encode( $params );
-		$resp    = self::api_request( 'POST', 'checkout/sessions', $sk, $body );
+		$resp = self::api_request( 'POST', 'checkout/sessions', $sk, $body );
 		if ( is_wp_error( $resp ) ) {
 			return $resp;
 		}
+
+		$http_code = (int) wp_remote_retrieve_response_code( $resp );
+		if ( $http_code < 200 || $http_code >= 300 ) {
+			return new WP_Error(
+				'twec_stripe_http',
+				__( 'Stripe checkout session could not be created.', 'planit-event-manager' ),
+				array( 'status' => 502 )
+			);
+		}
+
 		$data = json_decode( (string) wp_remote_retrieve_body( $resp ), true );
 		if ( ! is_array( $data ) ) {
 			return new WP_Error( 'twec_stripe_parse', __( 'Invalid response from Stripe.', 'planit-event-manager' ), array( 'status' => 502 ) );
 		}
 		if ( ! empty( $data['error'] ) && is_array( $data['error'] ) ) {
-			$msg = isset( $data['error']['message'] ) ? (string) $data['error']['message'] : 'Stripe error';
+			$msg = isset( $data['error']['message'] ) ? sanitize_text_field( (string) $data['error']['message'] ) : __( 'Stripe error', 'planit-event-manager' );
 			return new WP_Error( 'twec_stripe_api', $msg, array( 'status' => 400 ) );
 		}
 		$url = isset( $data['url'] ) ? (string) $data['url'] : '';
@@ -447,7 +457,7 @@ class TWEC_Payments_Stripe {
 	}
 
 	/**
-	 * Executes a Stripe API request via WordPress HTTP API (wp_remote_post).
+	 * Executes a Stripe API request via the WordPress HTTP API (`wp_safe_remote_post`).
 	 *
 	 * Network failures return WP_Error. HTTP 5xx responses return WP_Error (service unavailable).
 	 * Stripe often returns HTTP 400 with a JSON `{ error: { … } }` body for validation failures;
@@ -472,7 +482,7 @@ class TWEC_Payments_Stripe {
 			),
 			'body'    => $body,
 		);
-		$response = wp_remote_post( $url, $args );
+		$response = wp_safe_remote_post( $url, $args );
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}

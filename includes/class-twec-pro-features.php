@@ -77,8 +77,7 @@ class TWEC_Pro_Features {
 	 * @param int $post_id Post ID.
 	 */
 	public function save_featured_meta( $post_id ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_POST['twec_featured_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['twec_featured_nonce'] ), 'twec_save_featured' ) ) {
+		if ( ! twec_verify_post_nonce_field( 'twec_featured_nonce', 'twec_save_featured' ) ) {
 			return;
 		}
 

@@ -653,8 +653,7 @@ class TWEC_WooCommerce {
 	 * @return void
 	 */
 	public static function save_event_product_meta( $post_id, $post ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_POST['twec_wc_ticket_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['twec_wc_ticket_nonce'] ), 'twec_wc_ticket_save' ) ) {
+		if ( ! twec_verify_post_nonce_field( 'twec_wc_ticket_nonce', 'twec_wc_ticket_save' ) ) {
 			return;
 		}
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
@@ -845,7 +844,7 @@ class TWEC_WooCommerce {
 
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename=twec-ticket-orders-' . $event_id . '.csv' );
+		header( 'Content-Disposition: attachment; filename="twec-ticket-orders-' . $event_id . '.csv"' );
 
 		$out = fopen( 'php://output', 'w' );
 		if ( false === $out ) {

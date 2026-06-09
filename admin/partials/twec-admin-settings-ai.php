@@ -34,7 +34,7 @@ $ai_client_ready       = class_exists( 'TWEC_AI', false ) && TWEC_AI::is_text_ge
 	<?php elseif ( ! $ai_client_ready ) : ?>
 		<p>
 			<?php
-			$connectors_label = esc_html__( 'Settings → Connectors', 'planit-event-manager' );
+			$connectors_label  = esc_html__( 'Settings → Connectors', 'planit-event-manager' );
 			$connectors_markup = $can_manage_connectors
 				? '<a href="' . esc_url( $connectors_url ) . '">' . $connectors_label . '</a>'
 				: $connectors_label;
@@ -86,7 +86,7 @@ $ai_client_ready       = class_exists( 'TWEC_AI', false ) && TWEC_AI::is_text_ge
 		<tr>
 			<th scope="row"><?php esc_html_e( 'Public event assistant', 'planit-event-manager' ); ?></th>
 			<td>
-				<label><input type="checkbox" name="twec_settings[ai_public_assistant]" value="yes" <?php checked( $ai_public_assistant, 'yes' ); ?> /> <?php esc_html_e( 'Allow the Event Assistant block to answer visitor questions (rate limited)', 'planit-event-manager' ); ?></label>
+				<label><input type="checkbox" name="twec_settings[ai_public_assistant]" value="yes" <?php checked( $ai_public_assistant, 'yes' ); ?> /> <?php esc_html_e( 'Allow the Event Assistant and Event Search blocks on the front end (rate limited)', 'planit-event-manager' ); ?></label>
 			</td>
 		</tr>
 		<tr>

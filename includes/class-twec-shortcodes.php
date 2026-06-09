@@ -294,7 +294,7 @@ class TWEC_Shortcodes {
 		if ( ! in_array( $link_behavior, array( 'modal', 'page' ), true ) ) {
 			$link_behavior = 'modal';
 		}
-		$link_behavior = (string) apply_filters( 'twec_compact_list_link_behavior', $link_behavior, $atts );
+		$link_behavior   = (string) apply_filters( 'twec_compact_list_link_behavior', $link_behavior, $atts );
 		$use_interactive = function_exists( 'twec_compact_should_use_interactivity' )
 			&& twec_compact_should_use_interactivity( $atts );
 

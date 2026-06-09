@@ -41,6 +41,7 @@ class TWEC_AI {
 		add_filter( 'handle_bulk_actions-edit-twec_event', array( __CLASS__, 'handle_bulk_publish_prep_action' ), 10, 3 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_bulk_publish_prep_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_public_assistant_assets' ) );
+		add_shortcode( 'twec_event_search', array( __CLASS__, 'shortcode_event_search' ) );
 	}
 
 	/**
@@ -238,10 +239,15 @@ class TWEC_AI {
 	}
 
 	/**
+	 * Register PlanIt AI REST routes under `planit/v1`.
+	 *
+	 * Admin routes require per-post nonces and `edit_post` capability checks.
+	 * The public query route is gated by settings, rate limits, and response caching.
+	 *
 	 * @return void
 	 */
 	public static function register_rest_routes() {
-		$admin_routes = array(
+		$admin_routes     = array(
 			'/ai/draft-description' => array( __CLASS__, 'rest_draft_description' ),
 			'/ai/suggest-taxonomy'  => array( __CLASS__, 'rest_suggest_taxonomy' ),
 			'/ai/social-snippet'    => array( __CLASS__, 'rest_social_snippet' ),
@@ -293,12 +299,12 @@ class TWEC_AI {
 				'callback'            => array( __CLASS__, 'rest_public_query' ),
 				'permission_callback' => array( __CLASS__, 'rest_public_query_permissions' ),
 				'args'                => array(
-					'query' => array(
+					'query'    => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'days'  => array(
+					'days'     => array(
 						'type'              => 'integer',
 						'default'           => 14,
 						'sanitize_callback' => 'absint',
@@ -307,6 +313,38 @@ class TWEC_AI {
 						'type'              => 'string',
 						'required'          => false,
 						'sanitize_callback' => 'sanitize_title',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			'planit/v1',
+			'/ai/event-search',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'rest_event_search' ),
+				'permission_callback' => array( __CLASS__, 'rest_public_query_permissions' ),
+				'args'                => array(
+					'query'    => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'days'     => array(
+						'type'              => 'integer',
+						'default'           => 60,
+						'sanitize_callback' => 'absint',
+					),
+					'category' => array(
+						'type'              => 'string',
+						'required'          => false,
+						'sanitize_callback' => 'sanitize_title',
+					),
+					'limit'    => array(
+						'type'              => 'integer',
+						'default'           => 20,
+						'sanitize_callback' => 'absint',
 					),
 				),
 			)
@@ -602,7 +640,7 @@ class TWEC_AI {
 			return false;
 		}
 		$post_id = (int) $request->get_param( 'post_id' );
-		$nonce   = (string) $request->get_param( 'nonce' );
+		$nonce   = sanitize_text_field( (string) $request->get_param( 'nonce' ) );
 		if ( $post_id <= 0 ) {
 			return new WP_Error( 'twec_ai_post', __( 'Invalid post.', 'planit-event-manager' ), array( 'status' => 400 ) );
 		}
@@ -649,7 +687,7 @@ class TWEC_AI {
 			return false;
 		}
 		$post_id = (int) $request->get_param( 'post_id' );
-		$nonce   = (string) $request->get_param( 'nonce' );
+		$nonce   = sanitize_text_field( (string) $request->get_param( 'nonce' ) );
 		if ( $post_id <= 0 ) {
 			return new WP_Error( 'twec_ai_post', __( 'Save the event draft first, then try again.', 'planit-event-manager' ), array( 'status' => 400 ) );
 		}
@@ -693,19 +731,19 @@ class TWEC_AI {
 		if ( $organizer_id > 0 ) {
 			$organizer_name = get_the_title( $organizer_id );
 		}
-		$cats = wp_get_post_terms( $post_id, 'twec_event_category', array( 'fields' => 'names' ) );
-		$tags = wp_get_post_terms( $post_id, 'twec_event_tag', array( 'fields' => 'names' ) );
+		$cats   = wp_get_post_terms( $post_id, 'twec_event_category', array( 'fields' => 'names' ) );
+		$tags   = wp_get_post_terms( $post_id, 'twec_event_tag', array( 'fields' => 'names' ) );
 		$planit = class_exists( 'TWEC_REST', false ) ? TWEC_REST::get_event_payload( array( 'id' => $post_id ) ) : array();
 		return array(
-			'title'          => get_the_title( $post ),
-			'excerpt'        => has_excerpt( $post ) ? get_the_excerpt( $post ) : '',
-			'content'        => $post->post_content,
-			'venue'          => is_string( $venue_name ) ? $venue_name : '',
-			'organizer'      => is_string( $organizer_name ) ? $organizer_name : '',
-			'categories'     => is_array( $cats ) ? $cats : array(),
-			'tags'           => is_array( $tags ) ? $tags : array(),
-			'has_thumbnail'  => has_post_thumbnail( $post_id ),
-			'planit_event'   => $planit,
+			'title'         => get_the_title( $post ),
+			'excerpt'       => has_excerpt( $post ) ? get_the_excerpt( $post ) : '',
+			'content'       => $post->post_content,
+			'venue'         => is_string( $venue_name ) ? $venue_name : '',
+			'organizer'     => is_string( $organizer_name ) ? $organizer_name : '',
+			'categories'    => is_array( $cats ) ? $cats : array(),
+			'tags'          => is_array( $tags ) ? $tags : array(),
+			'has_thumbnail' => has_post_thumbnail( $post_id ),
+			'planit_event'  => $planit,
 		);
 	}
 
@@ -769,7 +807,7 @@ class TWEC_AI {
 			wp_date( 'Y-m-d' ),
 			$text
 		);
-		$json = self::request_text( $prompt, $schema, 0.2 );
+		$json   = self::request_text( $prompt, $schema, 0.2 );
 		if ( is_wp_error( $json ) ) {
 			return $json;
 		}
@@ -962,7 +1000,7 @@ class TWEC_AI {
 	/**
 	 * Run one WP AI Client text generation attempt.
 	 *
-	 * @param string   $prompt Prompt text.
+	 * @param string     $prompt Prompt text.
 	 * @param array|null $schema Optional JSON schema.
 	 * @param float|null $temp   Temperature, or null to omit.
 	 * @return string|WP_Error
@@ -992,12 +1030,14 @@ class TWEC_AI {
 	}
 
 	/**
-	 * Request text from the configured AI provider (retries without temperature when unsupported).
+	 * Request text from the configured WordPress AI connector (retries without temperature when unsupported).
+	 *
+	 * Delegates outbound provider HTTP to core `wp_ai_client_*` APIs; returns `WP_Error` on provider failure.
 	 *
 	 * @param string     $prompt Prompt text.
-	 * @param array|null $schema Optional JSON schema.
+	 * @param array|null $schema Optional JSON schema for structured responses.
 	 * @param float|null $temp   Temperature; null skips the parameter entirely.
-	 * @return string|WP_Error
+	 * @return string|WP_Error Generated text or error.
 	 */
 	public static function request_text( $prompt, $schema = null, $temp = 0.5 ) {
 		if ( ! self::is_text_generation_available() ) {
@@ -1043,7 +1083,7 @@ class TWEC_AI {
 			return $ctx;
 		}
 		$prompt = sprintf(
-			"You are helping write a WordPress event page. Event title: %s. Start: %s. End: %s. Venue: %s. Categories: %s. Write 2-3 engaging paragraphs for the event description and a one-sentence excerpt. Respond as JSON with keys description and excerpt only.",
+			'You are helping write a WordPress event page. Event title: %s. Start: %s. End: %s. Venue: %s. Categories: %s. Write 2-3 engaging paragraphs for the event description and a one-sentence excerpt. Respond as JSON with keys description and excerpt only.',
 			$ctx['title'],
 			isset( $ctx['planit_event']['start_date'] ) ? (string) $ctx['planit_event']['start_date'] : '',
 			isset( $ctx['planit_event']['end_date'] ) ? (string) $ctx['planit_event']['end_date'] : '',
@@ -1058,7 +1098,7 @@ class TWEC_AI {
 			),
 			'required'   => array( 'description', 'excerpt' ),
 		);
-		$json = self::generate_text( $prompt, $schema, 0.6 );
+		$json   = self::generate_text( $prompt, $schema, 0.6 );
 		if ( is_wp_error( $json ) ) {
 			return $json;
 		}
@@ -1140,15 +1180,21 @@ class TWEC_AI {
 			isset( $ctx['title'] ) ? (string) $ctx['title'] : '',
 			$slug_list
 		);
-		$schema = array(
+		$schema    = array(
 			'type'       => 'object',
 			'properties' => array(
-				'categories' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
-				'tags'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+				'categories' => array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'string' ),
+				),
+				'tags'       => array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'string' ),
+				),
 			),
 			'required'   => array( 'categories', 'tags' ),
 		);
-		$json = self::generate_text( $prompt, $schema, 0.3 );
+		$json      = self::generate_text( $prompt, $schema, 0.3 );
 		if ( is_wp_error( $json ) ) {
 			return $json;
 		}
@@ -1178,7 +1224,7 @@ class TWEC_AI {
 			$ctx['title'],
 			isset( $ctx['planit_event']['start_date'] ) ? (string) $ctx['planit_event']['start_date'] : ''
 		);
-		$text = self::generate_text( $prompt, null, 0.5 );
+		$text   = self::generate_text( $prompt, null, 0.5 );
 		if ( is_wp_error( $text ) ) {
 			return $text;
 		}
@@ -1203,7 +1249,7 @@ class TWEC_AI {
 			'Write concise image alt text (max 125 characters) for a featured image on an event page titled: %s.',
 			$ctx['title']
 		);
-		$text = self::generate_text( $prompt, null, 0.3 );
+		$text   = self::generate_text( $prompt, null, 0.3 );
 		if ( is_wp_error( $text ) ) {
 			return $text;
 		}
@@ -1243,18 +1289,24 @@ class TWEC_AI {
 			return $ctx;
 		}
 
-		$checks             = self::build_publish_checks( $ctx );
-		$needs_categories   = empty( $ctx['categories'] );
-		$site_taxonomy_list = self::get_site_taxonomy_slug_list();
-		$schema             = array(
+		$checks               = self::build_publish_checks( $ctx );
+		$needs_categories     = empty( $ctx['categories'] );
+		$site_taxonomy_list   = self::get_site_taxonomy_slug_list();
+		$schema               = array(
 			'type'       => 'object',
 			'properties' => array(
 				'description'    => array( 'type' => 'string' ),
 				'excerpt'        => array( 'type' => 'string' ),
 				'social_snippet' => array( 'type' => 'string' ),
 				'alt_text'       => array( 'type' => 'string' ),
-				'categories'     => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
-				'tags'           => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+				'categories'     => array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'string' ),
+				),
+				'tags'           => array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'string' ),
+				),
 				'summary'        => array( 'type' => 'string' ),
 			),
 			'required'   => array( 'description', 'excerpt', 'social_snippet', 'summary' ),
@@ -1262,7 +1314,7 @@ class TWEC_AI {
 		$category_instruction = $needs_categories
 			? 'This event has no categories assigned: you MUST include at least one category slug in the categories array, chosen from the site taxonomy slugs or as a new hyphenated slug.'
 			: 'Include category slugs in the categories array when refining taxonomy (use site slugs when possible).';
-		$prompt = sprintf(
+		$prompt               = sprintf(
 			'Prepare publish-ready copy for this event. Title: %1$s. Dates: %2$s – %3$s. Venue: %4$s. Organizer: %5$s. Current category names: %6$s. Site taxonomy slugs: %7$s. Return JSON with description, excerpt, social_snippet (max 200 chars), alt_text (empty string if no featured image is expected), categories (array of hyphenated slugs), tags (array of hyphenated slugs), and a one-sentence summary. %8$s',
 			$ctx['title'],
 			isset( $ctx['planit_event']['start_date'] ) ? (string) $ctx['planit_event']['start_date'] : '',
@@ -1273,7 +1325,7 @@ class TWEC_AI {
 			$site_taxonomy_list,
 			$category_instruction
 		);
-		$json = self::generate_text( $prompt, $schema, 0.5 );
+		$json                 = self::generate_text( $prompt, $schema, 0.5 );
 		if ( is_wp_error( $json ) ) {
 			return $json;
 		}
@@ -1423,7 +1475,7 @@ class TWEC_AI {
 		$messages = array();
 
 		if ( count( $post_ids ) > $limit ) {
-			$skipped = count( $post_ids ) - $limit;
+			$skipped  = count( $post_ids ) - $limit;
 			$post_ids = array_slice( $post_ids, 0, $limit );
 		}
 
@@ -1577,7 +1629,7 @@ class TWEC_AI {
 			wp_json_encode( $ctx['meta'] ),
 			wp_strip_all_tags( (string) $ctx['content'] )
 		);
-		$text = self::generate_text( $prompt, null, 0.5 );
+		$text   = self::generate_text( $prompt, null, 0.5 );
 		if ( is_wp_error( $text ) ) {
 			return $text;
 		}
@@ -1600,7 +1652,7 @@ class TWEC_AI {
 			wp_json_encode( $ctx['meta'] ),
 			wp_strip_all_tags( (string) $ctx['content'] )
 		);
-		$text = self::generate_text( $prompt, null, 0.5 );
+		$text   = self::generate_text( $prompt, null, 0.5 );
 		if ( is_wp_error( $text ) ) {
 			return $text;
 		}
@@ -1644,9 +1696,16 @@ class TWEC_AI {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function get_upcoming_events_for_context( $days = 14, $category_slug = '' ) {
-		$days  = max( 1, min( 60, (int) $days ) );
+		$days          = max( 1, min( 60, (int) $days ) );
+		$category_slug = sanitize_title( (string) $category_slug );
+		$cache_key     = 'planit_event_manager_ai_events_ctx_' . md5( $days . '|' . $category_slug . '|' . gmdate( 'Y-m-d' ) );
+		$cached        = get_transient( $cache_key );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
 		$after = current_time( 'Y-m-d' );
-		$args  = array(
+		$args          = array(
 			'post_type'      => 'twec_event',
 			'post_status'    => 'publish',
 			'posts_per_page' => 30,
@@ -1664,7 +1723,6 @@ class TWEC_AI {
 				),
 			),
 		);
-		$category_slug = sanitize_title( (string) $category_slug );
 		if ( '' !== $category_slug ) {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Optional category filter.
 			$args['tax_query'] = array(
@@ -1701,12 +1759,19 @@ class TWEC_AI {
 			);
 		}
 		wp_reset_postdata();
+
+		set_transient( $cache_key, $rows, 15 * MINUTE_IN_SECONDS );
+
 		return $rows;
 	}
 
 	/**
-	 * @param WP_REST_Request $request Request.
-	 * @return WP_REST_Response|WP_Error
+	 * Public AI assistant: answers calendar questions using upcoming event context.
+	 *
+	 * Responses are cached briefly to avoid repeated provider calls for identical questions.
+	 *
+	 * @param WP_REST_Request $request Incoming REST request.
+	 * @return WP_REST_Response|WP_Error JSON answer and supporting event rows.
 	 */
 	public static function rest_public_query( $request ) {
 		if ( ! self::check_public_rate_limit() ) {
@@ -1718,20 +1783,399 @@ class TWEC_AI {
 		}
 		$days     = max( 1, min( 60, (int) $request->get_param( 'days' ) ) );
 		$category = sanitize_title( (string) $request->get_param( 'category' ) );
-		$events   = self::get_upcoming_events_for_context( $days, $category );
-		$events   = (array) apply_filters( 'twec_ai_public_query_events', $events, $query, $days );
-		$json     = wp_json_encode( $events );
-		$locale   = (string) apply_filters( 'twec_ai_public_query_locale', get_locale(), $query, $days );
-		$locale   = sanitize_text_field( $locale );
-		$prompt   = "You are an event calendar assistant. Answer ONLY using the event data JSON below. If no events match, say so. Be concise. Do not invent events. Respond in the user's language (locale: {$locale}).\n\nQuestion: {$query}\n\nEvents JSON:\n{$json}";
+		$locale   = sanitize_text_field( (string) apply_filters( 'twec_ai_public_query_locale', get_locale(), $query, $days ) );
+
+		$events = self::get_upcoming_events_for_context( $days, $category );
+		$events = (array) apply_filters( 'twec_ai_public_query_events', $events, $query, $days );
+
+		$response_cache_key = 'planit_event_manager_ai_pub_' . md5( $query . '|' . $days . '|' . $category . '|' . $locale . '|' . md5( (string) wp_json_encode( $events ) ) );
+		$cached_response    = get_transient( $response_cache_key );
+		if ( false !== $cached_response && is_array( $cached_response ) ) {
+			return rest_ensure_response( $cached_response );
+		}
+
+		$json   = wp_json_encode( $events );
+		$prompt = "You are an event calendar assistant. Answer ONLY using the event data JSON below. If no events match, say so. Be concise. Do not invent events. Respond in the user's language (locale: {$locale}).\n\nQuestion: {$query}\n\nEvents JSON:\n{$json}";
 		$answer = self::generate_text( $prompt, null, self::public_temperature() );
 		if ( is_wp_error( $answer ) ) {
 			return $answer;
 		}
-		return rest_ensure_response(
+
+		$payload = array(
+			'answer' => wp_kses_post( $answer ),
+			'events' => $events,
+		);
+
+		set_transient( $response_cache_key, $payload, 15 * MINUTE_IN_SECONDS );
+
+		return rest_ensure_response( $payload );
+	}
+
+	/**
+	 * Natural-language event search: returns a ranked list of matching upcoming events.
+	 *
+	 * Uses AI to pick event IDs from a grounded pool, with a keyword WP_Query fallback.
+	 *
+	 * @param WP_REST_Request $request Incoming REST request.
+	 * @return WP_REST_Response|WP_Error Matched events and optional summary text.
+	 */
+	public static function rest_event_search( $request ) {
+		if ( ! self::check_public_rate_limit() ) {
+			return new WP_Error( 'twec_ai_rate_limit', __( 'Too many requests. Please wait a moment.', 'planit-event-manager' ), array( 'status' => 429 ) );
+		}
+
+		$query = sanitize_text_field( (string) $request->get_param( 'query' ) );
+		if ( '' === trim( $query ) || strlen( $query ) > 500 ) {
+			return new WP_Error( 'twec_ai_query', __( 'Enter a search phrase.', 'planit-event-manager' ), array( 'status' => 400 ) );
+		}
+
+		$days     = max( 1, min( 90, (int) $request->get_param( 'days' ) ) );
+		$category = sanitize_title( (string) $request->get_param( 'category' ) );
+		$limit    = max( 1, min( 50, (int) $request->get_param( 'limit' ) ) );
+		$locale   = sanitize_text_field( (string) apply_filters( 'twec_ai_event_search_locale', get_locale(), $query, $days ) );
+
+		$pool = self::get_upcoming_events_for_context( $days, $category );
+		$pool = (array) apply_filters( 'twec_ai_event_search_pool', $pool, $query, $days, $category );
+
+		$cache_key = 'planit_event_manager_ai_es_' . md5( $query . '|' . $days . '|' . $category . '|' . $limit . '|' . $locale . '|' . md5( (string) wp_json_encode( $pool ) ) );
+		$cached    = get_transient( $cache_key );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return rest_ensure_response( $cached );
+		}
+
+		$matched = self::match_events_by_natural_language( $query, $pool, $limit, $locale );
+		if ( is_wp_error( $matched ) ) {
+			return $matched;
+		}
+
+		if ( empty( $matched['events'] ) ) {
+			$fallback = self::keyword_search_events( $query, $days, $category, $limit );
+			if ( ! empty( $fallback ) ) {
+				$matched['events']  = $fallback;
+				$matched['summary'] = __( 'Showing keyword matches.', 'planit-event-manager' );
+			}
+		}
+
+		$matched['total'] = count( $matched['events'] );
+		set_transient( $cache_key, $matched, 15 * MINUTE_IN_SECONDS );
+
+		return rest_ensure_response( $matched );
+	}
+
+	/**
+	 * Ask the AI connector which event IDs best match a natural-language query.
+	 *
+	 * @param string                      $query  Visitor search phrase.
+	 * @param array<int, array<string,mixed>> $pool   Upcoming events context rows.
+	 * @param int                         $limit  Max results.
+	 * @param string                      $locale Site locale for summaries.
+	 * @return array{summary:string,events:array<int,array<string,mixed>>}|WP_Error
+	 */
+	private static function match_events_by_natural_language( $query, array $pool, $limit, $locale ) {
+		$limit = max( 1, min( 50, (int) $limit ) );
+		if ( empty( $pool ) ) {
+			return array(
+				'summary' => __( 'No upcoming events to search.', 'planit-event-manager' ),
+				'events'  => array(),
+			);
+		}
+
+		$compact = array();
+		foreach ( $pool as $row ) {
+			if ( ! is_array( $row ) || empty( $row['id'] ) ) {
+				continue;
+			}
+			$compact[] = array(
+				'id'         => (int) $row['id'],
+				'title'      => isset( $row['title'] ) ? (string) $row['title'] : '',
+				'start_date' => isset( $row['start_date'] ) ? (string) $row['start_date'] : '',
+				'categories' => isset( $row['categories'] ) && is_array( $row['categories'] ) ? $row['categories'] : array(),
+				'url'        => isset( $row['url'] ) ? (string) $row['url'] : '',
+			);
+		}
+
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'event_ids' => array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+				),
+				'summary'   => array( 'type' => 'string' ),
+			),
+			'required'   => array( 'event_ids' ),
+		);
+
+		$prompt = sprintf(
+			"You match calendar events to a visitor's natural-language search. Locale: %s.\nSearch: %s\n\nEvents JSON (only use ids from this list):\n%s\n\nReturn up to %d event ids ordered by relevance. Use an empty array when nothing matches. Optional one-sentence summary for the visitor.",
+			$locale,
+			$query,
+			(string) wp_json_encode( $compact ),
+			$limit
+		);
+
+		$json = self::generate_text( $prompt, $schema, 0.2 );
+		if ( is_wp_error( $json ) ) {
+			return $json;
+		}
+
+		$data = self::decode_ai_json( $json );
+		if ( ! is_array( $data ) ) {
+			return new WP_Error( 'twec_ai_parse', __( 'Could not parse search results.', 'planit-event-manager' ), array( 'status' => 502 ) );
+		}
+
+		$allowed_ids = array();
+		foreach ( $compact as $item ) {
+			$allowed_ids[ (int) $item['id'] ] = true;
+		}
+
+		$ordered = array();
+		$raw_ids = isset( $data['event_ids'] ) && is_array( $data['event_ids'] ) ? $data['event_ids'] : array();
+		foreach ( $raw_ids as $raw_id ) {
+			$eid = absint( $raw_id );
+			if ( $eid < 1 || empty( $allowed_ids[ $eid ] ) ) {
+				continue;
+			}
+			$row = self::format_event_search_result_row( $eid );
+			if ( ! empty( $row ) ) {
+				$ordered[] = $row;
+			}
+			if ( count( $ordered ) >= $limit ) {
+				break;
+			}
+		}
+
+		$summary = isset( $data['summary'] ) ? sanitize_text_field( (string) $data['summary'] ) : '';
+
+		return array(
+			'summary' => $summary,
+			'events'  => $ordered,
+		);
+	}
+
+	/**
+	 * Keyword fallback when AI returns no matches.
+	 *
+	 * @param string $query    Search phrase.
+	 * @param int    $days     Days ahead window.
+	 * @param string $category Optional category slug.
+	 * @param int    $limit    Max posts.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function keyword_search_events( $query, $days, $category, $limit ) {
+		$days  = max( 1, min( 90, (int) $days ) );
+		$limit = max( 1, min( 50, (int) $limit ) );
+		$after = current_time( 'Y-m-d' );
+
+		$args = array(
+			'post_type'              => 'twec_event',
+			'post_status'            => 'publish',
+			'posts_per_page'         => $limit,
+			's'                      => sanitize_text_field( (string) $query ),
+			'orderby'                => 'meta_value',
+			'order'                  => 'ASC',
+			'no_found_rows'          => true,
+			'update_post_term_cache' => false,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Search ordering.
+			'meta_key'               => '_twec_event_start_date',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Upcoming filter.
+			'meta_query'             => array(
+				array(
+					'key'     => '_twec_event_end_date',
+					'value'   => $after,
+					'compare' => '>=',
+					'type'    => 'DATE',
+				),
+			),
+		);
+
+		$category = sanitize_title( (string) $category );
+		if ( '' !== $category ) {
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Optional filter.
+			$args['tax_query'] = array(
+				array(
+					'taxonomy' => 'twec_event_category',
+					'field'    => 'slug',
+					'terms'    => $category,
+				),
+			);
+		}
+
+		$q    = new WP_Query( $args );
+		$rows = array();
+		foreach ( $q->posts as $post ) {
+			if ( ! ( $post instanceof WP_Post ) ) {
+				continue;
+			}
+			$row = self::format_event_search_result_row( (int) $post->ID );
+			if ( ! empty( $row ) ) {
+				$rows[] = $row;
+			}
+		}
+		wp_reset_postdata();
+
+		return $rows;
+	}
+
+	/**
+	 * Build a public event row for search result lists.
+	 *
+	 * @param int $event_id Event post ID.
+	 * @return array<string, mixed>
+	 */
+	public static function format_event_search_result_row( $event_id ) {
+		$event_id = (int) $event_id;
+		if ( $event_id < 1 || 'twec_event' !== get_post_type( $event_id ) || 'publish' !== get_post_status( $event_id ) ) {
+			return array();
+		}
+
+		$start    = (string) get_post_meta( $event_id, '_twec_event_start_date', true );
+		$end      = (string) get_post_meta( $event_id, '_twec_event_end_date', true );
+		$venue_id = (int) get_post_meta( $event_id, '_twec_event_venue', true );
+		$venue    = $venue_id > 0 ? get_post( $venue_id ) : null;
+		$terms    = get_the_terms( $event_id, 'twec_event_category' );
+		$cats     = array();
+		if ( is_array( $terms ) ) {
+			foreach ( $terms as $term ) {
+				if ( isset( $term->name ) ) {
+					$cats[] = (string) $term->name;
+				}
+			}
+		}
+
+		$date_label = '';
+		if ( '' !== $start ) {
+			$date_label = (string) mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $start );
+		}
+
+		return array(
+			'id'          => $event_id,
+			'title'       => (string) get_the_title( $event_id ),
+			'url'         => (string) get_permalink( $event_id ),
+			'start_date'  => $start,
+			'end_date'    => $end,
+			'date_label'  => $date_label,
+			'venue'       => ( $venue instanceof WP_Post ) ? (string) $venue->post_title : '',
+			'excerpt'     => has_excerpt( $event_id ) ? (string) get_the_excerpt( $event_id ) : '',
+			'categories'  => $cats,
+		);
+	}
+
+	/**
+	 * Shortcode: natural-language event search UI.
+	 *
+	 * @param array|string $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function shortcode_event_search( $atts = array() ) {
+		$atts = shortcode_atts(
 			array(
-				'answer' => wp_kses_post( $answer ),
-				'events' => $events,
+				'heading'     => '',
+				'placeholder' => '',
+				'days'        => 60,
+				'limit'       => 20,
+				'category'    => '',
+			),
+			is_array( $atts ) ? $atts : array(),
+			'twec_event_search'
+		);
+
+		return self::render_event_search_markup(
+			array(
+				'heading'     => sanitize_text_field( (string) $atts['heading'] ),
+				'placeholder' => sanitize_text_field( (string) $atts['placeholder'] ),
+				'days'        => max( 1, min( 90, (int) $atts['days'] ) ),
+				'limit'       => max( 1, min( 50, (int) $atts['limit'] ) ),
+				'category'    => sanitize_title( (string) $atts['category'] ),
+			)
+		);
+	}
+
+	/**
+	 * Render the event search block/shortcode HTML shell.
+	 *
+	 * @param array<string, mixed> $attributes Block or shortcode attributes.
+	 * @return string
+	 */
+	public static function render_event_search_markup( array $attributes ) {
+		if ( ! self::is_public_assistant_enabled() || ! self::is_text_generation_available() ) {
+			return '';
+		}
+
+		self::enqueue_event_search_assets();
+
+		$heading = isset( $attributes['heading'] ) ? sanitize_text_field( (string) $attributes['heading'] ) : '';
+		if ( '' === $heading ) {
+			$heading = __( 'Search events', 'planit-event-manager' );
+		}
+
+		$placeholder = isset( $attributes['placeholder'] ) ? sanitize_text_field( (string) $attributes['placeholder'] ) : '';
+		if ( '' === $placeholder ) {
+			$placeholder = __( 'e.g. free outdoor concerts this month', 'planit-event-manager' );
+		}
+
+		$days     = isset( $attributes['days'] ) ? max( 1, min( 90, (int) $attributes['days'] ) ) : 60;
+		$limit    = isset( $attributes['limit'] ) ? max( 1, min( 50, (int) $attributes['limit'] ) ) : 20;
+		$category = isset( $attributes['category'] ) ? sanitize_title( (string) $attributes['category'] ) : '';
+
+		$input_id = 'twec-event-search-input-' . wp_unique_id( 'twec-event-search-' );
+
+		$html  = '<div class="twec-event-search" data-days="' . esc_attr( (string) $days ) . '" data-limit="' . esc_attr( (string) $limit ) . '" data-category="' . esc_attr( $category ) . '">';
+		$html .= '<h3 class="twec-event-search__heading">' . esc_html( $heading ) . '</h3>';
+		$html .= '<form class="twec-event-search__form" action="#" method="get" role="search">';
+		$html .= '<label class="screen-reader-text" for="' . esc_attr( $input_id ) . '">' . esc_html( $heading ) . '</label>';
+		$html .= '<input type="search" id="' . esc_attr( $input_id ) . '" class="twec-event-search__input" name="twec_event_search" placeholder="' . esc_attr( $placeholder ) . '" autocomplete="off" />';
+		$html .= '<button type="submit" class="twec-event-search__submit button">' . esc_html__( 'Search', 'planit-event-manager' ) . '</button>';
+		$html .= '</form>';
+		$html .= '<p class="twec-event-search__summary" aria-live="polite"></p>';
+		$html .= '<div class="twec-event-search__results" aria-live="polite"></div>';
+		$html .= '</div>';
+
+		return $html;
+	}
+
+	/**
+	 * Enqueue event search front-end assets.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_event_search_assets() {
+		static $done = false;
+		if ( $done || ! self::is_public_assistant_enabled() || ! self::is_text_generation_available() ) {
+			return;
+		}
+		$done = true;
+
+		$js = PLANIT_EVENT_MANAGER_DIR . 'public/js/twec-event-search.js';
+		if ( ! is_readable( $js ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'twec-event-search',
+			PLANIT_EVENT_MANAGER_URL . 'public/css/twec-event-search.css',
+			array(),
+			PLANIT_EVENT_MANAGER_VERSION
+		);
+		wp_enqueue_script(
+			'twec-event-search',
+			PLANIT_EVENT_MANAGER_URL . 'public/js/twec-event-search.js',
+			array(),
+			(string) filemtime( $js ),
+			true
+		);
+		wp_localize_script(
+			'twec-event-search',
+			'twecEventSearch',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'planit/v1/ai/event-search' ) ),
+				'i18n'    => array(
+					'loading'  => __( 'Searching events…', 'planit-event-manager' ),
+					'empty'    => __( 'No matching events found. Try different words.', 'planit-event-manager' ),
+					'error'    => __( 'Search failed. Please try again.', 'planit-event-manager' ),
+					'results'  => __( '%d events found', 'planit-event-manager' ),
+					'oneResult' => __( '1 event found', 'planit-event-manager' ),
+				),
 			)
 		);
 	}
@@ -1797,23 +2241,23 @@ class TWEC_AI {
 				'nonce'    => wp_create_nonce( 'twec_ai_assist_' . $post_id ),
 				'restRoot' => esc_url_raw( rest_url( 'planit/v1/ai/' ) ),
 				'i18n'     => array(
-					'panelTitle'   => __( 'PlanIt AI Assist', 'planit-event-manager' ),
-					'publishPrep'  => __( 'Publish prep', 'planit-event-manager' ),
-					'draftDesc'    => __( 'Generate description', 'planit-event-manager' ),
-					'suggestTax'   => __( 'Suggest categories & tags', 'planit-event-manager' ),
-					'social'       => __( 'Social snippet', 'planit-event-manager' ),
-					'altText'      => __( 'Featured image alt text', 'planit-event-manager' ),
-					'accept'                 => __( 'Accept', 'planit-event-manager' ),
-					'acceptAlt'              => __( 'Apply alt text', 'planit-event-manager' ),
-					'acceptTaxonomy'         => __( 'Apply categories & tags', 'planit-event-manager' ),
-					'accepted'               => __( 'Applied.', 'planit-event-manager' ),
-					'noFeaturedImage'        => __( 'Set a featured image first.', 'planit-event-manager' ),
-					'noTaxonomySuggestions'  => __( 'No categories or tags to apply.', 'planit-event-manager' ),
-					'regenerate'             => __( 'Regenerate', 'planit-event-manager' ),
-					'discard'                => __( 'Discard', 'planit-event-manager' ),
-					'loading'                => __( 'Generating…', 'planit-event-manager' ),
-					'error'                  => __( 'AI request failed.', 'planit-event-manager' ),
-					'previewLabel'           => __( 'Preview', 'planit-event-manager' ),
+					'panelTitle'            => __( 'PlanIt AI Assist', 'planit-event-manager' ),
+					'publishPrep'           => __( 'Publish prep', 'planit-event-manager' ),
+					'draftDesc'             => __( 'Generate description', 'planit-event-manager' ),
+					'suggestTax'            => __( 'Suggest categories & tags', 'planit-event-manager' ),
+					'social'                => __( 'Social snippet', 'planit-event-manager' ),
+					'altText'               => __( 'Featured image alt text', 'planit-event-manager' ),
+					'accept'                => __( 'Accept', 'planit-event-manager' ),
+					'acceptAlt'             => __( 'Apply alt text', 'planit-event-manager' ),
+					'acceptTaxonomy'        => __( 'Apply categories & tags', 'planit-event-manager' ),
+					'accepted'              => __( 'Applied.', 'planit-event-manager' ),
+					'noFeaturedImage'       => __( 'Set a featured image first.', 'planit-event-manager' ),
+					'noTaxonomySuggestions' => __( 'No categories or tags to apply.', 'planit-event-manager' ),
+					'regenerate'            => __( 'Regenerate', 'planit-event-manager' ),
+					'discard'               => __( 'Discard', 'planit-event-manager' ),
+					'loading'               => __( 'Generating…', 'planit-event-manager' ),
+					'error'                 => __( 'AI request failed.', 'planit-event-manager' ),
+					'previewLabel'          => __( 'Preview', 'planit-event-manager' ),
 				),
 			)
 		);

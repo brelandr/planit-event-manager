@@ -102,7 +102,7 @@
 	}
 
 	/**
-	 * Read markers from DOM: sibling JSON script after #twec-map-container (SSR / non-jQuery injection).
+	 * Read markers from DOM: hidden textarea after #twec-map-container (SSR / non-jQuery injection).
 	 *
 	 * @return {Array|null}
 	 */
@@ -112,10 +112,15 @@
 			return null;
 		}
 		var jsonEl = document.getElementById('twec-calendar-map-markers-json');
-		if (!jsonEl || typeof jsonEl.textContent !== 'string') {
+		if (!jsonEl) {
 			return null;
 		}
-		var raw = jsonEl.textContent.trim();
+		var raw = '';
+		if (typeof jsonEl.value === 'string' && jsonEl.value.length) {
+			raw = jsonEl.value.trim();
+		} else if (typeof jsonEl.textContent === 'string') {
+			raw = jsonEl.textContent.trim();
+		}
 		if (!raw.length) {
 			return [];
 		}

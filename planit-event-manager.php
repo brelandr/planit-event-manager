@@ -29,9 +29,9 @@ if ( ! defined( 'WPINC' ) ) {
  * Prefer the canonical folder `planit-event-manager/` when it exists on disk so load order
  * (plugins may run `planit-event-manager-1` before `planit-event-manager`) does not deactivate the real copy.
  */
-$planit_event_manager_dup_base          = plugin_basename( __FILE__ );
-$planit_event_manager_canonical_base    = 'planit-event-manager/planit-event-manager.php';
-$planit_event_manager_canonical_path    = '';
+$planit_event_manager_dup_base       = plugin_basename( __FILE__ );
+$planit_event_manager_canonical_base = 'planit-event-manager/planit-event-manager.php';
+$planit_event_manager_canonical_path = '';
 if ( defined( 'WP_PLUGIN_DIR' ) && constant( 'WP_PLUGIN_DIR' ) ) {
 	$planit_event_manager_canonical_path = rtrim( (string) constant( 'WP_PLUGIN_DIR' ), '/' ) . '/planit-event-manager/planit-event-manager.php';
 }
@@ -145,6 +145,7 @@ if ( ! defined( 'PLANIT_PREMIUM_LIVE_DEMO_URL' ) ) {
 }
 
 require_once PLANIT_EVENT_MANAGER_DIR . 'includes/planit-event-manager-helpers.php';
+planit_event_manager_register_cache_invalidation_hooks();
 
 /**
  * Calendar + event list blocks always register from the org (free) package — even when Premium is active.
@@ -274,8 +275,8 @@ function planit_event_manager_companion_admin_notice() {
 	if ( get_user_meta( $user_id, 'planit_free_companion_notice_dismissed', true ) ) {
 		return;
 	}
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified via wp_verify_nonce( wp_unslash( ... ), ... ); companion flag is not persisted raw.
-	if ( isset( $_GET['planit_dismiss_companion'], $_GET['_wpnonce'] ) && '1' === (string) wp_unslash( $_GET['planit_dismiss_companion'] ) && wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'planit_dismiss_companion' ) ) {
+	if ( isset( $_GET['planit_dismiss_companion'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['planit_dismiss_companion'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below before privileged action.
+		twec_verify_get_nonce_or_die( 'planit_dismiss_companion' );
 		if ( ! current_user_can( 'activate_plugins' ) ) {
 			wp_die( esc_html__( 'You do not have permission to dismiss this notice.', 'planit-event-manager' ), '', array( 'response' => 403 ) );
 		}

@@ -32,6 +32,108 @@ class TWEC_Premium_Pillars {
 	}
 
 	/**
+	 * Public script base URL (free org package or premium runtime).
+	 *
+	 * @return string
+	 */
+	private static function public_script_base_url() {
+		if ( defined( 'PLANIT_EVENT_MANAGER_URL' ) ) {
+			return (string) PLANIT_EVENT_MANAGER_URL;
+		}
+		if ( defined( 'TWEC_PLUGIN_URL' ) ) {
+			return (string) TWEC_PLUGIN_URL;
+		}
+		return '';
+	}
+
+	/**
+	 * Asset version string for script cache busting.
+	 *
+	 * @return string
+	 */
+	private static function public_script_version() {
+		if ( defined( 'PLANIT_EVENT_MANAGER_VERSION' ) ) {
+			return (string) PLANIT_EVENT_MANAGER_VERSION;
+		}
+		if ( defined( 'TWEC_VERSION' ) ) {
+			return (string) TWEC_VERSION;
+		}
+		return '1.0.0';
+	}
+
+	/**
+	 * Enqueue submission form script once per request.
+	 *
+	 * @return void
+	 */
+	private static function enqueue_submission_form_script() {
+		static $done = false;
+		if ( $done ) {
+			return;
+		}
+		$base = self::public_script_base_url();
+		if ( '' === $base ) {
+			return;
+		}
+		$done = true;
+		wp_enqueue_script(
+			'twec-submission-form',
+			$base . 'public/js/twec-submission-form.js',
+			array(),
+			self::public_script_version(),
+			true
+		);
+		wp_localize_script(
+			'twec-submission-form',
+			'twecSubmissionFormL10n',
+			array(
+				'thanks'       => __( 'Thanks — we will review your submission.', 'planit-event-manager' ),
+				'error'        => __( 'Something went wrong.', 'planit-event-manager' ),
+				'networkError' => __( 'Network error.', 'planit-event-manager' ),
+			)
+		);
+	}
+
+	/**
+	 * Enqueue RSVP shortcode script once per request.
+	 *
+	 * @return void
+	 */
+	private static function enqueue_rsvp_script() {
+		static $done = false;
+		if ( $done ) {
+			return;
+		}
+		$base = self::public_script_base_url();
+		if ( '' === $base ) {
+			return;
+		}
+		$done = true;
+		wp_enqueue_script(
+			'twec-rsvp',
+			$base . 'public/js/twec-rsvp.js',
+			array(),
+			self::public_script_version(),
+			true
+		);
+		wp_localize_script(
+			'twec-rsvp',
+			'twecRsvpL10n',
+			array(
+				'waitlist'              => __( "You're on the waitlist — we'll notify you if a seat opens.", 'planit-event-manager' ),
+				'onList'                => __( "You're on the list.", 'planit-event-manager' ),
+				'rsvpFailed'            => __( 'Could not RSVP.', 'planit-event-manager' ),
+				'networkError'          => __( 'Network error.', 'planit-event-manager' ),
+				'cancelEmailRequired'   => __( 'Enter the email address you used to RSVP so we can remove it.', 'planit-event-manager' ),
+				'cancelFailed'          => __( 'Could not cancel.', 'planit-event-manager' ),
+				'cancelNotFound'        => __( 'No matching RSVP or waitlist entry for that email.', 'planit-event-manager' ),
+				'cancelWaitlistRemoved' => __( "You've been removed from the waitlist.", 'planit-event-manager' ),
+				'cancelRsvpRemoved'     => __( 'Your RSVP has been cancelled.', 'planit-event-manager' ),
+			)
+		);
+	}
+
+	/**
 	 * @return bool
 	 */
 	private static function is_licensed() {
@@ -182,6 +284,7 @@ class TWEC_Premium_Pillars {
 				),
 			)
 		);
+		$checkin_args = self::rest_checkin_route_args();
 		register_rest_route(
 			'planit/v1',
 			'/rsvp/checkin',
@@ -189,6 +292,7 @@ class TWEC_Premium_Pillars {
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'rest_rsvp_checkin' ),
 				'permission_callback' => array( __CLASS__, 'rest_permission_checkin' ),
+				'args'                => $checkin_args,
 			)
 		);
 		register_rest_route(
@@ -198,7 +302,42 @@ class TWEC_Premium_Pillars {
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'rest_rsvp_checkin' ),
 				'permission_callback' => array( __CLASS__, 'rest_permission_checkin' ),
+				'args'                => $checkin_args,
 			)
+		);
+	}
+
+	/**
+	 * REST argument schema for RSVP check-in / scan endpoints.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	private static function rest_checkin_route_args() {
+		return array(
+			'nonce'    => array(
+				'description'       => __( 'REST cookie nonce (`wp_rest`).', 'planit-event-manager' ),
+				'type'              => 'string',
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'event_id' => array(
+				'description'       => __( 'Event ID.', 'planit-event-manager' ),
+				'type'              => 'integer',
+				'required'          => false,
+				'sanitize_callback' => 'absint',
+			),
+			'email'    => array(
+				'description'       => __( 'Attendee email on the RSVP list.', 'planit-event-manager' ),
+				'type'              => 'string',
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_email',
+			),
+			'token'    => array(
+				'description'       => __( 'Check-in token issued for the attendee.', 'planit-event-manager' ),
+				'type'              => 'string',
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
 		);
 	}
 
@@ -490,6 +629,7 @@ class TWEC_Premium_Pillars {
 			}
 			return '<p class="twec-upgrade-inline">' . esc_html__( 'A valid PlanIt Premium license is required for submissions.', 'planit-event-manager' ) . '</p>';
 		}
+		self::enqueue_submission_form_script();
 		$rest  = esc_url( rest_url( 'planit/v1/submissions' ) );
 		$nonce = wp_create_nonce( 'wp_rest' );
 		ob_start();
@@ -501,31 +641,6 @@ class TWEC_Premium_Pillars {
 			<p><button type="button" class="button twec-submit-proposal" data-endpoint="<?php echo esc_url( $rest ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>"><?php esc_html_e( 'Submit for review', 'planit-event-manager' ); ?></button></p>
 			<p class="twec-submission-message" style="display:none;" role="status"></p>
 		</div>
-		<script>
-		(function() {
-			var b = document.querySelector('.twec-submit-proposal');
-			if (!b) return;
-			b.addEventListener('click', function() {
-				var el = b.closest('.twec-submission-form');
-				var t = el.querySelector('.twec-subject-title');
-				var c = el.querySelector('.twec-subject-content');
-				var m = el.querySelector('.twec-submission-message');
-				fetch(b.getAttribute('data-endpoint'), {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': b.getAttribute('data-nonce') },
-					credentials: 'same-origin',
-					body: JSON.stringify({ nonce: b.getAttribute('data-nonce'), title: t.value, content: c.value })
-				}).then(function(r) { return r.json().then(function(j) { return { status: r.status, body: j }; }); })
-				.then(function(res) {
-					m.style.display = 'block';
-					m.textContent = res.status === 201 ? '<?php echo esc_js( __( 'Thanks — we will review your submission.', 'planit-event-manager' ) ); ?>' : (res.body.message || '<?php echo esc_js( __( 'Something went wrong.', 'planit-event-manager' ) ); ?>');
-				}).catch(function() {
-					m.style.display = 'block';
-					m.textContent = '<?php echo esc_js( __( 'Network error.', 'planit-event-manager' ) ); ?>';
-				});
-			});
-		})();
-		</script>
 		<?php
 		return (string) ob_get_clean();
 	}
@@ -549,6 +664,7 @@ class TWEC_Premium_Pillars {
 		if ( $eid <= 0 || 'twec_event' !== get_post_type( $eid ) ) {
 			return '';
 		}
+		self::enqueue_rsvp_script();
 		$rest        = esc_url( rest_url( 'planit/v1/rsvp' ) );
 		$rest_cancel = esc_url( rest_url( 'planit/v1/rsvp/cancel' ) );
 		$nonce       = wp_create_nonce( 'wp_rest' );
@@ -564,84 +680,6 @@ class TWEC_Premium_Pillars {
 			</p>
 			<p class="twec-rsvp-message" style="display:none;" role="status"></p>
 		</div>
-		<script>
-		(function() {
-			document.querySelectorAll('.twec-rsvp').forEach(function(el) {
-				var btn = el.querySelector('.twec-rsvp-send');
-				var cb = el.querySelector('.twec-rsvp-cancel');
-				var m = el.querySelector('.twec-rsvp-message');
-				if (!btn || !m) return;
-				btn.addEventListener('click', function() {
-					var rcb = el.querySelector('.twec-rsvp-remind');
-					var remind = rcb && rcb.checked;
-					var mail = el.querySelector('.twec-rsvp-email');
-					var nm = el.querySelector('.twec-rsvp-name');
-					fetch(btn.getAttribute('data-endpoint'), {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': btn.getAttribute('data-nonce') },
-						credentials: 'same-origin',
-						body: JSON.stringify({
-							nonce: btn.getAttribute('data-nonce'),
-							event_id: parseInt(btn.getAttribute('data-event'), 10),
-							email: mail ? mail.value : '',
-							name: nm ? nm.value : '',
-							remind: remind
-						})
-					}).then(function(r) { return r.json().then(function(j) { return { status: r.status, body: j }; }); })
-					.then(function(res) {
-						m.style.display = 'block';
-						if (res.status === 200 && res.body && res.body.waitlist) {
-							m.textContent = '<?php echo esc_js( __( "You're on the waitlist — we'll notify you if a seat opens.", 'planit-event-manager' ) ); ?>';
-						} else {
-							m.textContent = res.status === 200 ? '<?php echo esc_js( __( "You're on the list.", 'planit-event-manager' ) ); ?>' : (res.body.message || '<?php echo esc_js( __( 'Could not RSVP.', 'planit-event-manager' ) ); ?>');
-						}
-					}).catch(function() {
-						m.style.display = 'block';
-						m.textContent = '<?php echo esc_js( __( 'Network error.', 'planit-event-manager' ) ); ?>';
-					});
-				});
-				if (cb) cb.addEventListener('click', function() {
-					var mail = el.querySelector('.twec-rsvp-email');
-					var em = mail ? String(mail.value || '').trim() : '';
-					if (!em) {
-						m.style.display = 'block';
-						m.textContent = '<?php echo esc_js( __( 'Enter the email address you used to RSVP so we can remove it.', 'planit-event-manager' ) ); ?>';
-						return;
-					}
-					fetch(cb.getAttribute('data-cancel-endpoint'), {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cb.getAttribute('data-nonce') },
-						credentials: 'same-origin',
-						body: JSON.stringify({
-							nonce: cb.getAttribute('data-nonce'),
-							event_id: parseInt(cb.getAttribute('data-event'), 10),
-							email: em
-						})
-					}).then(function(r) { return r.json().then(function(j) { return { status: r.status, body: j }; }); })
-					.then(function(res) {
-						m.style.display = 'block';
-						if (res.status !== 200) {
-							m.textContent = (res.body && res.body.message) ? res.body.message : '<?php echo esc_js( __( 'Could not cancel.', 'planit-event-manager' ) ); ?>';
-							return;
-						}
-						var b = res.body || {};
-						if (!b.removed) {
-							m.textContent = '<?php echo esc_js( __( 'No matching RSVP or waitlist entry for that email.', 'planit-event-manager' ) ); ?>';
-							return;
-						}
-						if (b.context === 'waitlist') {
-							m.textContent = '<?php echo esc_js( __( "You've been removed from the waitlist.", 'planit-event-manager' ) ); ?>';
-						} else {
-							m.textContent = '<?php echo esc_js( __( 'Your RSVP has been cancelled.', 'planit-event-manager' ) ); ?>';
-						}
-					}).catch(function() {
-						m.style.display = 'block';
-						m.textContent = '<?php echo esc_js( __( 'Network error.', 'planit-event-manager' ) ); ?>';
-					});
-				});
-			});
-		})();
-		</script>
 		<?php
 		return (string) ob_get_clean();
 	}
@@ -761,14 +799,14 @@ class TWEC_Premium_Pillars {
 		if ( ! self::is_licensed() || 'twec_event' !== $post->post_type ) {
 			return;
 		}
-		if ( ! isset( $_POST['twec_capacity_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['twec_capacity_nonce'] ) ), 'twec_capacity_save' ) ) {
+		if ( ! twec_verify_post_nonce_field( 'twec_capacity_nonce', 'twec_capacity_save' ) ) {
 			return;
 		}
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
 		if ( isset( $_POST['twec_event_capacity'] ) ) {
-			update_post_meta( $post_id, '_twec_event_capacity', max( 0, (int) wp_unslash( $_POST['twec_event_capacity'] ) ) );
+			update_post_meta( $post_id, '_twec_event_capacity', max( 0, absint( wp_unslash( $_POST['twec_event_capacity'] ) ) ) );
 		}
 
 		self::maybe_promote_waitlist_for_event( (int) $post_id );
@@ -894,16 +932,16 @@ class TWEC_Premium_Pillars {
 			wp_die( esc_html__( 'Premium license required.', 'planit-event-manager' ) );
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Admin download link uses explicit nonce + capability checks.
-		if ( ! isset( $_GET['_wpnonce'], $_GET['event_id'] ) ) {
+		if ( ! isset( $_GET['event_id'] ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'planit-event-manager' ) );
 		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$event_id = absint( wp_unslash( $_GET['event_id'] ) );
-		if ( $event_id < 1 || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'twec_rsvp_csv_' . $event_id ) ) {
-			wp_die( esc_html__( 'Invalid RSVP export link.', 'planit-event-manager' ) );
+		$event_id = absint( wp_unslash( $_GET['event_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified immediately below.
+		if ( $event_id < 1 ) {
+			wp_die( esc_html__( 'Invalid request.', 'planit-event-manager' ) );
 		}
+
+		twec_verify_get_nonce_or_die( 'twec_rsvp_csv_' . $event_id );
 
 		if ( ! current_user_can( 'edit_post', $event_id ) ) {
 			wp_die( esc_html__( 'You do not have permission to export this event.', 'planit-event-manager' ) );
@@ -916,7 +954,7 @@ class TWEC_Premium_Pillars {
 
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename=' . sanitize_file_name( $filename ) );
+		header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $filename ) . '"' );
 
 		$out = fopen( 'php://output', 'w' );
 		if ( false === $out ) {

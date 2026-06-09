@@ -168,7 +168,7 @@ class TWEC_Woo_Series_Pass {
 		if ( $pid < 1 ) {
 			return;
 		}
-		if ( ! isset( $_POST['twec_series_pass_product_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['twec_series_pass_product_nonce'] ) ), 'twec_series_pass_product' ) ) {
+		if ( ! twec_verify_post_nonce_field( 'twec_series_pass_product_nonce', 'twec_series_pass_product' ) ) {
 			return;
 		}
 

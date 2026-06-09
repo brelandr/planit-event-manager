@@ -328,6 +328,72 @@
 		},
 	} );
 
+	registerBlockType( 'planit-event-manager/event-search', {
+		apiVersion: 2,
+		title: __( 'PlanIt Event Search', 'planit-event-manager' ),
+		icon: 'search',
+		category: 'widgets',
+		keywords: [ 'planit', 'twec', 'events', 'search', 'ai', 'find' ],
+		description: __( 'Natural-language event search powered by site AI (opt-in in Events → Settings → AI).', 'planit-event-manager' ),
+		attributes: {
+			heading: { type: 'string', default: __( 'Search events', 'planit-event-manager' ) },
+			placeholder: { type: 'string', default: __( 'e.g. free outdoor concerts this month', 'planit-event-manager' ) },
+			days: { type: 'number', default: 60 },
+			maxResults: { type: 'number', default: 20 },
+			categorySlug: { type: 'string', default: '' },
+		},
+		supports: { html: false, align: true },
+		edit: function( props ) {
+			var blockProps = useBlockProps( {
+				className: 'twec-block-event-search',
+				style: { maxWidth: '100%' },
+			} );
+			return el( 'div', blockProps,
+				el( InspectorControls, {},
+					el( PanelBody, { title: __( 'Event search', 'planit-event-manager' ), initialOpen: true },
+						el( TextControl, {
+							label: __( 'Heading', 'planit-event-manager' ),
+							value: props.attributes.heading,
+							onChange: function( v ) { props.setAttributes( { heading: v } ); },
+						} ),
+						el( TextControl, {
+							label: __( 'Placeholder', 'planit-event-manager' ),
+							value: props.attributes.placeholder,
+							onChange: function( v ) { props.setAttributes( { placeholder: v } ); },
+						} ),
+						el( RangeControl, {
+							label: __( 'Days ahead', 'planit-event-manager' ),
+							value: props.attributes.days,
+							onChange: function( v ) { props.setAttributes( { days: v } ); },
+							min: 1,
+							max: 90,
+							help: __( 'How many upcoming days of events are considered for matching.', 'planit-event-manager' ),
+						} ),
+						el( RangeControl, {
+							label: __( 'Max results', 'planit-event-manager' ),
+							value: props.attributes.maxResults,
+							onChange: function( v ) { props.setAttributes( { maxResults: v } ); },
+							min: 1,
+							max: 50,
+						} ),
+						el( TextControl, {
+							label: __( 'Category slug (optional)', 'planit-event-manager' ),
+							value: props.attributes.categorySlug,
+							onChange: function( v ) { props.setAttributes( { categorySlug: v } ); },
+						} )
+					),
+				),
+				el( 'div', { className: 'twec-event-search twec-event-search--editor-preview' },
+					el( 'h3', { className: 'twec-event-search__heading' }, props.attributes.heading || __( 'Search events', 'planit-event-manager' ) ),
+					el( 'p', { className: 'description' }, __( 'Preview on the front end when the public assistant is enabled in settings.', 'planit-event-manager' ) )
+				)
+			);
+		},
+		save: function() {
+			return null;
+		},
+	} );
+
 	registerBlockType( 'planit-event-manager/event-assistant', {
 		apiVersion: 2,
 		title: __( 'PlanIt Event Assistant', 'planit-event-manager' ),

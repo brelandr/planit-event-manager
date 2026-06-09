@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! isset( $twec_compact_link_behavior ) ) {
 	$twec_compact_link_behavior = 'modal';
 }
-$twec_compact_use_modal = ( 'page' !== $twec_compact_link_behavior );
-$twec_compact_dialog_id = 'twec-compact-dialog-' . wp_unique_id();
+$twec_compact_use_modal   = ( 'page' !== $twec_compact_link_behavior );
+$twec_compact_dialog_id   = 'twec-compact-dialog-' . wp_unique_id();
 $twec_compact_interactive = ! empty( $twec_compact_interactive );
 ?>
 <div class="twec-compact-list-wrapper<?php echo $twec_compact_interactive ? ' twec-compact-list-wrapper--interactive' : ''; ?>" data-link-behavior="<?php echo esc_attr( $twec_compact_link_behavior ); ?>" data-dialog-id="<?php echo esc_attr( $twec_compact_dialog_id ); ?>"<?php echo $twec_compact_interactive ? ' data-twec-compact-interactive="1"' : ''; ?>>
@@ -32,10 +32,10 @@ $twec_compact_interactive = ! empty( $twec_compact_interactive );
 				<?php
 				while ( $events_query->have_posts() ) :
 					$events_query->the_post();
-					$event_id    = get_the_ID();
-					$start_date  = get_post_meta( $event_id, '_twec_event_start_date', true );
-					$permalink   = get_permalink( $event_id );
-					$date_label  = '';
+					$event_id   = get_the_ID();
+					$start_date = get_post_meta( $event_id, '_twec_event_start_date', true );
+					$permalink  = get_permalink( $event_id );
+					$date_label = '';
 					if ( is_string( $start_date ) && '' !== $start_date ) {
 						$ts = strtotime( $start_date );
 						if ( $ts ) {

@@ -201,15 +201,15 @@ class TWEC_Abilities {
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'title'             => array( 'type' => 'string' ),
-						'start_date'        => array( 'type' => 'string' ),
-						'end_date'          => array( 'type' => 'string' ),
-						'all_day'           => array( 'type' => 'boolean' ),
-						'venue_id'          => array( 'type' => 'integer' ),
-						'organizer_id'      => array( 'type' => 'integer' ),
-						'natural_language'  => array( 'type' => 'string' ),
-						'content'           => array( 'type' => 'string' ),
-						'excerpt'           => array( 'type' => 'string' ),
+						'title'            => array( 'type' => 'string' ),
+						'start_date'       => array( 'type' => 'string' ),
+						'end_date'         => array( 'type' => 'string' ),
+						'all_day'          => array( 'type' => 'boolean' ),
+						'venue_id'         => array( 'type' => 'integer' ),
+						'organizer_id'     => array( 'type' => 'integer' ),
+						'natural_language' => array( 'type' => 'string' ),
+						'content'          => array( 'type' => 'string' ),
+						'excerpt'          => array( 'type' => 'string' ),
 					),
 				),
 				'output_schema'       => array(
@@ -242,7 +242,10 @@ class TWEC_Abilities {
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'event_id'     => array( 'type' => 'integer', 'minimum' => 1 ),
+						'event_id'     => array(
+							'type'    => 'integer',
+							'minimum' => 1,
+						),
 						'title'        => array( 'type' => 'string' ),
 						'content'      => array( 'type' => 'string' ),
 						'excerpt'      => array( 'type' => 'string' ),
@@ -251,8 +254,14 @@ class TWEC_Abilities {
 						'all_day'      => array( 'type' => 'boolean' ),
 						'venue_id'     => array( 'type' => 'integer' ),
 						'organizer_id' => array( 'type' => 'integer' ),
-						'categories'   => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
-						'tags'         => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'categories'   => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
+						'tags'         => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
 					),
 					'required'   => array( 'event_id' ),
 				),

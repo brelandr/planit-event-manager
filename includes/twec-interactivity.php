@@ -76,7 +76,7 @@ function twec_compact_should_use_interactivity( $shortcode_atts = array() ) {
 	if ( isset( $shortcode_atts['interactivity'] ) && '' !== (string) $shortcode_atts['interactivity'] ) {
 		$inter = strtolower( (string) $shortcode_atts['interactivity'] );
 	} elseif ( array_key_exists( 'enableInteractivity', $shortcode_atts ) ) {
-		$e = $shortcode_atts['enableInteractivity'];
+		$e     = $shortcode_atts['enableInteractivity'];
 		$inter = is_bool( $e ) ? ( $e ? 'yes' : 'no' ) : strtolower( (string) $e );
 	}
 	if ( in_array( $inter, array( 'no', '0', 'false', 'off' ), true ) ) {

@@ -171,8 +171,7 @@ class TWEC_Custom_Fields {
 	 * @param int $post_id Post ID.
 	 */
 	public function save_custom_fields( $post_id ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_POST['twec_custom_fields_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['twec_custom_fields_nonce'] ), 'twec_save_custom_fields' ) ) {
+		if ( ! twec_verify_post_nonce_field( 'twec_custom_fields_nonce', 'twec_save_custom_fields' ) ) {
 			return;
 		}
 

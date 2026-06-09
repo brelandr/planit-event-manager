@@ -49,10 +49,7 @@ class TWEC_Onboarding {
 	 * @return void
 	 */
 	public static function dismiss() {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'twec_dismiss_onboarding' ) ) {
-			wp_die( esc_html__( 'Security check failed. Please try again.', 'planit-event-manager' ), esc_html__( 'Onboarding', 'planit-event-manager' ), array( 'response' => 403 ) );
-		}
+		twec_verify_get_nonce_or_die( 'twec_dismiss_onboarding' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to do this.', 'planit-event-manager' ), esc_html__( 'Onboarding', 'planit-event-manager' ), array( 'response' => 403 ) );
 		}
@@ -92,13 +89,13 @@ class TWEC_Onboarding {
 		<div class="notice notice-info is-dismissible" id="twec-onboarding-checklist" style="position:relative">
 			<p><strong><?php esc_html_e( 'PlanIt Event Manager — get started', 'planit-event-manager' ); ?></strong></p>
 			<ol style="list-style: decimal; margin-left:1.5em">
-				<li style="<?php echo $ok_venue ? 'text-decoration: line-through; opacity: 0.7;' : ''; ?>">
+				<li style="<?php echo esc_attr( $ok_venue ? 'text-decoration: line-through; opacity: 0.7;' : '' ); ?>">
 					<?php esc_html_e( 'Add a venue (optional but useful for addresses and maps).', 'planit-event-manager' ); ?>
 					<?php if ( ! $ok_venue ) : ?>
 						<a class="button button-small" href="<?php echo esc_url( $venue ); ?>"><?php esc_html_e( 'Add venue', 'planit-event-manager' ); ?></a>
 					<?php endif; ?>
 				</li>
-				<li style="<?php echo $ok_event ? 'text-decoration: line-through; opacity: 0.7;' : ''; ?>">
+				<li style="<?php echo esc_attr( $ok_event ? 'text-decoration: line-through; opacity: 0.7;' : '' ); ?>">
 					<?php esc_html_e( 'Create your first event.', 'planit-event-manager' ); ?>
 					<?php if ( ! $ok_event ) : ?>
 						<a class="button button-small" href="<?php echo esc_url( $add ); ?>"><?php esc_html_e( 'Add event', 'planit-event-manager' ); ?></a>

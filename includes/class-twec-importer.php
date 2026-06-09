@@ -70,11 +70,7 @@ class TWEC_Importer {
 			return;
 		}
 
-		// Verify nonce (wp_unslash only) before any further processing.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['_wpnonce'] ), 'twec_import' ) ) {
-			wp_die( esc_html__( 'Security check failed. Please try again.', 'planit-event-manager' ) );
-		}
+		twec_verify_post_nonce_or_die( '_wpnonce', 'twec_import' );
 
 		// Check if premium is available.
 		if ( ! TWEC_Premium::is_available( 'import' ) ) {

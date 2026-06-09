@@ -269,6 +269,42 @@ class TWEC_Blocks_Core {
 			)
 		);
 
+		$search_attributes = array(
+			'heading'     => array(
+				'type'    => 'string',
+				'default' => '',
+			),
+			'placeholder' => array(
+				'type'    => 'string',
+				'default' => '',
+			),
+			'days'        => array(
+				'type'    => 'number',
+				'default' => 60,
+			),
+			'maxResults'  => array(
+				'type'    => 'number',
+				'default' => 20,
+			),
+			'categorySlug' => array(
+				'type'    => 'string',
+				'default' => '',
+			),
+		);
+
+		register_block_type(
+			'planit-event-manager/event-search',
+			array_merge(
+				array(
+					'api_version'     => 2,
+					'editor_script'   => 'planit-twec-blocks-core',
+					'attributes'      => $search_attributes,
+					'render_callback' => array( __CLASS__, 'render_event_search' ),
+				),
+				$editor_style_args
+			)
+		);
+
 		if ( function_exists( 'register_block_pattern' ) ) {
 			$title   = esc_html( __( 'Upcoming events', 'planit-event-manager' ) );
 			$cal     = "<!-- wp:planit-event-manager/calendar {\"view\":\"month\"} /-->\n";
@@ -573,6 +609,60 @@ class TWEC_Blocks_Core {
 		if ( $is_editor ) {
 			return self::wrap_editor_live_preview_html( $html );
 		}
+		return $html;
+	}
+
+	/**
+	 * Render natural-language event search block.
+	 *
+	 * @param array    $attributes Block attributes.
+	 * @param string   $content    Block content.
+	 * @param WP_Block $block      Block object.
+	 * @return string
+	 */
+	public static function render_event_search( $attributes, $content, $block ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+		$is_editor = self::is_block_editor_renderer_request();
+
+		if ( $is_editor && ! self::use_editor_live_preview() ) {
+			return self::block_editor_preview_placeholder_html(
+				__( 'PlanIt Event Search preview. Enable AI under Events → Settings on the front end.', 'planit-event-manager' )
+			);
+		}
+
+		if ( ! class_exists( 'TWEC_AI', false ) || ! TWEC_AI::is_public_assistant_enabled() ) {
+			if ( $is_editor ) {
+				return self::block_editor_preview_placeholder_html(
+					__( 'Event Search is disabled. Enable PlanIt AI and the public assistant under Events → Settings.', 'planit-event-manager' )
+				);
+			}
+			return '';
+		}
+
+		$heading = isset( $attributes['heading'] ) ? sanitize_text_field( (string) $attributes['heading'] ) : '';
+		$placeholder = isset( $attributes['placeholder'] ) ? sanitize_text_field( (string) $attributes['placeholder'] ) : '';
+		$days = isset( $attributes['days'] ) ? max( 1, min( 90, (int) $attributes['days'] ) ) : 60;
+		$limit = isset( $attributes['maxResults'] ) ? max( 1, min( 50, (int) $attributes['maxResults'] ) ) : 20;
+		$category = self::slug_attr( $attributes['categorySlug'] ?? '' );
+
+		$html = TWEC_AI::render_event_search_markup(
+			array(
+				'heading'     => $heading,
+				'placeholder' => $placeholder,
+				'days'        => $days,
+				'limit'       => $limit,
+				'category'    => $category,
+			)
+		);
+
+		if ( $is_editor ) {
+			if ( '' === $html ) {
+				return self::block_editor_preview_placeholder_html(
+					__( 'Event Search requires AI and the public assistant to be enabled in settings.', 'planit-event-manager' )
+				);
+			}
+			return self::wrap_editor_live_preview_html( $html );
+		}
+
 		return $html;
 	}
 }

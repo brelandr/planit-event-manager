@@ -202,22 +202,8 @@ class TWEC_Meta_Boxes {
 		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date - Used for extracting time parts from stored datetime, not for current time
 		$end_time_only = $end_time ? $end_time : ( $end_date ? gmdate( 'H:i', strtotime( $end_date ) ) : '' );
 
-		$venues     = get_posts(
-			array(
-				'post_type'      => 'twec_venue',
-				'posts_per_page' => -1,
-				'orderby'        => 'title',
-				'order'          => 'ASC',
-			)
-		);
-		$organizers = get_posts(
-			array(
-				'post_type'      => 'twec_organizer',
-				'posts_per_page' => -1,
-				'orderby'        => 'title',
-				'order'          => 'ASC',
-			)
-		);
+		$venues     = planit_event_manager_get_admin_post_choices( 'twec_venue' );
+		$organizers = planit_event_manager_get_admin_post_choices( 'twec_organizer' );
 		?>
 		<div class="twec-event-details-meta-box">
 			<div id="twec-event-datetime-inline-notice" class="notice notice-error" style="display:none;padding:10px;margin:0 0 12px;"><p></p></div>
@@ -261,7 +247,7 @@ class TWEC_Meta_Boxes {
 					<select id="twec_venue" name="twec_venue">
 						<option value=""><?php esc_html_e( 'Select Venue', 'planit-event-manager' ); ?></option>
 						<?php foreach ( $venues as $venue ) : ?>
-							<option value="<?php echo absint( $venue->ID ); ?>" <?php selected( $venue_id, $venue->ID ); ?>><?php echo esc_html( $venue->post_title ); ?></option>
+							<option value="<?php echo absint( $venue['ID'] ); ?>" <?php selected( $venue_id, (int) $venue['ID'] ); ?>><?php echo esc_html( $venue['post_title'] ); ?></option>
 						<?php endforeach; ?>
 					</select>
 					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=twec_venue' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Add New Venue', 'planit-event-manager' ); ?></a>
@@ -273,7 +259,7 @@ class TWEC_Meta_Boxes {
 					<select id="twec_organizer" name="twec_organizer">
 						<option value=""><?php esc_html_e( 'Select Organizer', 'planit-event-manager' ); ?></option>
 						<?php foreach ( $organizers as $organizer ) : ?>
-							<option value="<?php echo absint( $organizer->ID ); ?>" <?php selected( $organizer_id, $organizer->ID ); ?>><?php echo esc_html( $organizer->post_title ); ?></option>
+							<option value="<?php echo absint( $organizer['ID'] ); ?>" <?php selected( $organizer_id, (int) $organizer['ID'] ); ?>><?php echo esc_html( $organizer['post_title'] ); ?></option>
 						<?php endforeach; ?>
 					</select>
 					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=twec_organizer' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Add New Organizer', 'planit-event-manager' ); ?></a>
@@ -459,9 +445,7 @@ class TWEC_Meta_Boxes {
 	 * @param int $post_id Post ID.
 	 */
 	public function save_event_meta( $post_id ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_POST['twec_event_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['twec_event_meta_nonce'] ), 'twec_save_event_meta' ) ) {
-			// Invalid or absent metabox nonce: return (do not wp_die) so core can finish saves during autosave/revisions without this field.
+		if ( ! twec_verify_post_nonce_field( 'twec_event_meta_nonce', 'twec_save_event_meta' ) ) {
 			return;
 		}
 
@@ -634,9 +618,7 @@ class TWEC_Meta_Boxes {
 	 * @param int $post_id Post ID.
 	 */
 	public function save_venue_meta( $post_id ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_POST['twec_venue_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['twec_venue_meta_nonce'] ), 'twec_save_venue_meta' ) ) {
-			// Invalid or absent metabox nonce: return (do not wp_die) so core can finish saves during autosave/revisions without this field.
+		if ( ! twec_verify_post_nonce_field( 'twec_venue_meta_nonce', 'twec_save_venue_meta' ) ) {
 			return;
 		}
 
@@ -666,9 +648,7 @@ class TWEC_Meta_Boxes {
 	 * @param int $post_id Post ID.
 	 */
 	public function save_organizer_meta( $post_id ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_POST['twec_organizer_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['twec_organizer_meta_nonce'] ), 'twec_save_organizer_meta' ) ) {
-			// Invalid or absent metabox nonce: return (do not wp_die) so core can finish saves during autosave/revisions without this field.
+		if ( ! twec_verify_post_nonce_field( 'twec_organizer_meta_nonce', 'twec_save_organizer_meta' ) ) {
 			return;
 		}
 

@@ -18,25 +18,14 @@ if ( ! current_user_can( 'manage_woocommerce' ) ) {
 if ( isset( $_GET['twec_export'] ) && 'csv' === sanitize_text_field( wp_unslash( $_GET['twec_export'] ) ) ) {
 	$eid_export = isset( $_GET['event_id'] ) ? absint( wp_unslash( $_GET['event_id'] ) ) : 0;
 	// Nonce name bound to event id for tighter scope.
-	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'twec_wc_export_' . $eid_export ) ) {
-		wp_die( esc_html__( 'Security check failed.', 'planit-event-manager' ), '', array( 'response' => 403 ) );
-	}
+	twec_verify_get_nonce_or_die( 'twec_wc_export_' . $eid_export );
 	if ( class_exists( 'TWEC_WooCommerce', false ) ) {
 		TWEC_WooCommerce::send_ticket_orders_csv( $eid_export );
 	}
 	exit;
 }
 
-$events = get_posts(
-	array(
-		'post_type'      => 'twec_event',
-		'post_status'    => 'publish',
-		'posts_per_page' => -1,
-		'orderby'        => 'title',
-		'order'          => 'ASC',
-	)
-);
+$events = planit_event_manager_get_wc_ticket_event_choices();
 
 $selected = isset( $_GET['event_id'] ) ? absint( wp_unslash( $_GET['event_id'] ) ) : 0;
 $orders   = array();
@@ -57,15 +46,11 @@ if ( $selected > 0 && class_exists( 'TWEC_WooCommerce', false ) ) {
 			<option value="0"><?php esc_html_e( '— Select —', 'planit-event-manager' ); ?></option>
 			<?php foreach ( $events as $ev ) : ?>
 				<?php
-				$pid = (int) get_post_meta( $ev->ID, TWEC_WooCommerce::META_PRODUCT_ID, true );
-				if ( $pid < 1 ) {
-					continue;
-				}
 				printf(
 					'<option value="%d" %s>%s</option>',
-					(int) $ev->ID,
-					selected( $selected, $ev->ID, false ),
-					esc_html( get_the_title( $ev ) )
+					(int) $ev['ID'],
+					selected( $selected, (int) $ev['ID'], false ),
+					esc_html( $ev['post_title'] )
 				);
 				?>
 			<?php endforeach; ?>

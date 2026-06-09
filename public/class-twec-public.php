@@ -1667,12 +1667,7 @@ class TWEC_Public {
 			return;
 		}
 
-		// Verify nonce for public export (WordPress.org security requirement - prevents CSRF).
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'twec_export_ical' ) ) {
-			wp_die( esc_html__( 'Security check failed. Please try again.', 'planit-event-manager' ), esc_html__( 'Export Error', 'planit-event-manager' ), array( 'response' => 403 ) );
-			return;
-		}
+		twec_verify_get_nonce_or_die( 'twec_export_ical' );
 
 		// Public read-only export - no permission check needed, but nonce verification is required.
 		// Access $_GET after nonce verification (WordPress.org security requirement).
@@ -1740,12 +1735,7 @@ class TWEC_Public {
 			return;
 		}
 
-		// Verify nonce for public export (WordPress.org security requirement - prevents CSRF).
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'twec_export_google' ) ) {
-			wp_die( esc_html__( 'Security check failed. Please try again.', 'planit-event-manager' ), esc_html__( 'Export Error', 'planit-event-manager' ), array( 'response' => 403 ) );
-			return;
-		}
+		twec_verify_get_nonce_or_die( 'twec_export_google' );
 
 		// Public read-only export - no permission check needed, but nonce verification is required.
 		// Access $_GET after nonce verification (WordPress.org security requirement).
@@ -1884,8 +1874,9 @@ class TWEC_Public {
 		if ( ! empty( $map_markers ) ) {
 			$json_blob = $this->wp_json_for_script_inline( $map_markers );
 			if ( '' !== $json_blob ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- application/json blob; breakout prevented via wp_json_encode JSON_HEX_* flags.
-				$html .= '<script type="application/json" id="twec-calendar-map-markers-json" class="twec-map-markers-json">' . $json_blob . '</script>';
+				$html .= '<textarea id="twec-calendar-map-markers-json" class="twec-map-markers-json" hidden readonly aria-hidden="true">';
+				$html .= esc_textarea( $json_blob );
+				$html .= '</textarea>';
 			}
 		}
 		$html .= '<div class="twec-map-events-list">';

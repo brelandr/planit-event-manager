@@ -82,7 +82,7 @@ class TWEC_Admin {
 				'twec-admin',
 				'twecAdminData',
 				array(
-					'deleteTestEventsConfirm' => esc_js( __( 'Are you sure you want to delete all test events? This action cannot be undone.', 'planit-event-manager' ) ),
+					'deleteTestEventsConfirm' => __( 'Are you sure you want to delete all test events? This action cannot be undone.', 'planit-event-manager' ),
 				)
 			);
 		}
@@ -127,10 +127,10 @@ class TWEC_Admin {
 
 			array_unshift( $links, $view_details_link );
 
-			$docs_link  = '<a href="' . esc_url( admin_url( 'edit.php?post_type=twec_event&page=twec-documentation' ) ) . '">' . esc_html__( 'Documentation', 'planit-event-manager' ) . '</a>';
-			$wporg_link = '<a href="' . esc_url( 'https://wordpress.org/plugins/planit-event-manager/' ) . '" target="_blank" rel="noopener">' . esc_html__( 'WordPress.org plugin page', 'planit-event-manager' ) . '</a>';
-			$links[]   = $docs_link;
-			$links[]   = $wporg_link;
+			$docs_link    = '<a href="' . esc_url( admin_url( 'edit.php?post_type=twec_event&page=twec-documentation' ) ) . '">' . esc_html__( 'Documentation', 'planit-event-manager' ) . '</a>';
+			$wporg_link   = '<a href="' . esc_url( 'https://wordpress.org/plugins/planit-event-manager/' ) . '" target="_blank" rel="noopener">' . esc_html__( 'WordPress.org plugin page', 'planit-event-manager' ) . '</a>';
+			$links[]      = $docs_link;
+			$links[]      = $wporg_link;
 			$demo_url_row = class_exists( 'TWEC_Premium', false ) ? TWEC_Premium::get_premium_live_demo_url() : '';
 			if ( '' !== $demo_url_row ) {
 				$links[] = '<a href="' . esc_url( $demo_url_row ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Try Premium Version', 'planit-event-manager' ) . '</a>';
@@ -348,11 +348,7 @@ class TWEC_Admin {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Download link verified via capability check and nonce in URL.
 		$action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 		if ( 'twec_download_csv_template' === $action ) {
-			// Verify nonce first (CSRF), then capability (authorization).
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-			if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'twec_download_csv_template' ) ) {
-				wp_die( esc_html__( 'Security check failed. Please try again.', 'planit-event-manager' ) );
-			}
+			twec_verify_get_nonce_or_die( 'twec_download_csv_template' );
 			if ( ! current_user_can( 'manage_options' ) ) {
 				wp_die( esc_html__( 'You do not have permission to perform this action.', 'planit-event-manager' ) );
 			}
@@ -680,62 +676,62 @@ class TWEC_Admin {
 		}
 
 		if ( isset( $input['seo_json_ld'] ) ) {
-			$j = sanitize_text_field( wp_unslash( $input['seo_json_ld'] ) );
+			$j                        = sanitize_text_field( wp_unslash( $input['seo_json_ld'] ) );
 			$sanitized['seo_json_ld'] = in_array( $j, array( 'yes', 'no' ), true ) ? $j : 'yes';
 		} else {
 			$sanitized['seo_json_ld'] = 'yes';
 		}
 
 		if ( isset( $input['seo_og'] ) ) {
-			$o = sanitize_text_field( wp_unslash( $input['seo_og'] ) );
+			$o                   = sanitize_text_field( wp_unslash( $input['seo_og'] ) );
 			$sanitized['seo_og'] = in_array( $o, array( 'yes', 'no' ), true ) ? $o : 'yes';
 		} else {
 			$sanitized['seo_og'] = 'yes';
 		}
 
 		if ( isset( $input['seo_json_ld_graph'] ) ) {
-			$g = sanitize_text_field( wp_unslash( $input['seo_json_ld_graph'] ) );
+			$g                              = sanitize_text_field( wp_unslash( $input['seo_json_ld_graph'] ) );
 			$sanitized['seo_json_ld_graph'] = in_array( $g, array( 'yes', 'no' ), true ) ? $g : 'no';
 		}
 
 		if ( isset( $input['hierarchical_event_urls'] ) ) {
-			$h = sanitize_text_field( wp_unslash( $input['hierarchical_event_urls'] ) );
+			$h                                    = sanitize_text_field( wp_unslash( $input['hierarchical_event_urls'] ) );
 			$sanitized['hierarchical_event_urls'] = in_array( $h, array( 'yes', 'no' ), true ) ? $h : 'no';
 		}
 
 		if ( isset( $input['seo_breadcrumb_json_ld'] ) ) {
-			$b = sanitize_text_field( wp_unslash( $input['seo_breadcrumb_json_ld'] ) );
+			$b                                   = sanitize_text_field( wp_unslash( $input['seo_breadcrumb_json_ld'] ) );
 			$sanitized['seo_breadcrumb_json_ld'] = in_array( $b, array( 'yes', 'no' ), true ) ? $b : 'yes';
 		} else {
 			$sanitized['seo_breadcrumb_json_ld'] = 'yes';
 		}
 
 		if ( isset( $input['calendar_interactivity'] ) ) {
-			$c = sanitize_text_field( wp_unslash( $input['calendar_interactivity'] ) );
+			$c                                   = sanitize_text_field( wp_unslash( $input['calendar_interactivity'] ) );
 			$sanitized['calendar_interactivity'] = in_array( $c, array( 'yes', 'no' ), true ) ? $c : 'yes';
 		} else {
 			$sanitized['calendar_interactivity'] = 'yes';
 		}
 
 		if ( isset( $input['compact_list_interactivity'] ) ) {
-			$c = sanitize_text_field( wp_unslash( $input['compact_list_interactivity'] ) );
+			$c                                       = sanitize_text_field( wp_unslash( $input['compact_list_interactivity'] ) );
 			$sanitized['compact_list_interactivity'] = in_array( $c, array( 'yes', 'no' ), true ) ? $c : 'yes';
 		} else {
 			$sanitized['compact_list_interactivity'] = 'yes';
 		}
 
 		if ( isset( $input['cookieless_view_counter'] ) ) {
-			$v = sanitize_text_field( wp_unslash( $input['cookieless_view_counter'] ) );
+			$v                                    = sanitize_text_field( wp_unslash( $input['cookieless_view_counter'] ) );
 			$sanitized['cookieless_view_counter'] = in_array( $v, array( 'yes', 'no' ), true ) ? $v : 'no';
 		} else {
 			$sanitized['cookieless_view_counter'] = 'no';
 		}
 		if ( isset( $input['payment_gateway'] ) ) {
-			$g = sanitize_text_field( wp_unslash( $input['payment_gateway'] ) );
+			$g                            = sanitize_text_field( wp_unslash( $input['payment_gateway'] ) );
 			$sanitized['payment_gateway'] = in_array( $g, array( 'none', 'stripe', 'paypal' ), true ) ? $g : 'none';
 		}
 		if ( isset( $input['payment_mode'] ) ) {
-			$pm = sanitize_text_field( wp_unslash( $input['payment_mode'] ) );
+			$pm                        = sanitize_text_field( wp_unslash( $input['payment_mode'] ) );
 			$sanitized['payment_mode'] = in_array( $pm, array( 'test', 'live' ), true ) ? $pm : 'test';
 		}
 
@@ -783,18 +779,18 @@ class TWEC_Admin {
 			$sanitized['stripe_feature_price_minor'] = max( 0, (int) wp_unslash( $input['stripe_feature_price_minor'] ) );
 		}
 		if ( isset( $input['stripe_currency'] ) ) {
-			$c = strtolower( preg_replace( '/[^a-z]/', '', (string) wp_unslash( $input['stripe_currency'] ) ) );
+			$c                            = strtolower( preg_replace( '/[^a-z]/', '', (string) wp_unslash( $input['stripe_currency'] ) ) );
 			$sanitized['stripe_currency'] = 3 === strlen( $c ) ? $c : 'usd';
 		}
 		if ( isset( $input['stripe_product_name'] ) ) {
 			$sanitized['stripe_product_name'] = sanitize_text_field( wp_unslash( $input['stripe_product_name'] ) );
 		}
 		if ( isset( $input['stripe_checkout_success_url'] ) ) {
-			$u = trim( (string) wp_unslash( $input['stripe_checkout_success_url'] ) );
+			$u                                        = trim( (string) wp_unslash( $input['stripe_checkout_success_url'] ) );
 			$sanitized['stripe_checkout_success_url'] = ( '' === $u ) ? '' : esc_url_raw( $u );
 		}
 		if ( isset( $input['stripe_checkout_cancel_url'] ) ) {
-			$u = trim( (string) wp_unslash( $input['stripe_checkout_cancel_url'] ) );
+			$u                                       = trim( (string) wp_unslash( $input['stripe_checkout_cancel_url'] ) );
 			$sanitized['stripe_checkout_cancel_url'] = ( '' === $u ) ? '' : esc_url_raw( $u );
 		}
 		$p = $stripe_str( 'paypal_test_client_id' );
@@ -817,20 +813,20 @@ class TWEC_Admin {
 			$sanitized['paypal_webhook_id'] = sanitize_text_field( wp_unslash( (string) $input['paypal_webhook_id'] ) );
 		}
 		if ( isset( $input['paypal_checkout_success_url'] ) ) {
-			$u = trim( (string) wp_unslash( $input['paypal_checkout_success_url'] ) );
+			$u                                        = trim( (string) wp_unslash( $input['paypal_checkout_success_url'] ) );
 			$sanitized['paypal_checkout_success_url'] = ( '' === $u ) ? '' : esc_url_raw( $u );
 		}
 		if ( isset( $input['paypal_checkout_cancel_url'] ) ) {
-			$u = trim( (string) wp_unslash( $input['paypal_checkout_cancel_url'] ) );
+			$u                                       = trim( (string) wp_unslash( $input['paypal_checkout_cancel_url'] ) );
 			$sanitized['paypal_checkout_cancel_url'] = ( '' === $u ) ? '' : esc_url_raw( $u );
 		}
-		$sanitized['woocommerce_tickets_enabled']       = ( ! empty( $input['woocommerce_tickets_enabled'] ) ) ? 'yes' : 'no';
-		$sanitized['woocommerce_ticket_cta_list']       = ( ! empty( $input['woocommerce_ticket_cta_list'] ) ) ? 'yes' : 'no';
-		$sanitized['woocommerce_ticket_cta_calendar']   = ( ! empty( $input['woocommerce_ticket_cta_calendar'] ) ) ? 'yes' : 'no';
+		$sanitized['woocommerce_tickets_enabled']              = ( ! empty( $input['woocommerce_tickets_enabled'] ) ) ? 'yes' : 'no';
+		$sanitized['woocommerce_ticket_cta_list']              = ( ! empty( $input['woocommerce_ticket_cta_list'] ) ) ? 'yes' : 'no';
+		$sanitized['woocommerce_ticket_cta_calendar']          = ( ! empty( $input['woocommerce_ticket_cta_calendar'] ) ) ? 'yes' : 'no';
 		$sanitized['woocommerce_ticket_require_buyer_details'] = ( ! empty( $input['woocommerce_ticket_require_buyer_details'] ) ) ? 'yes' : 'no';
-		$sanitized['woocommerce_ticket_show_view_cart'] = ( ! empty( $input['woocommerce_ticket_show_view_cart'] ) ) ? 'yes' : 'no';
+		$sanitized['woocommerce_ticket_show_view_cart']        = ( ! empty( $input['woocommerce_ticket_show_view_cart'] ) ) ? 'yes' : 'no';
 		if ( isset( $input['woocommerce_ticket_btn_style'] ) ) {
-			$st = strtolower( sanitize_key( (string) wp_unslash( $input['woocommerce_ticket_btn_style'] ) ) );
+			$st                                        = strtolower( sanitize_key( (string) wp_unslash( $input['woocommerce_ticket_btn_style'] ) ) );
 			$sanitized['woocommerce_ticket_btn_style'] = in_array( $st, array( 'theme', 'solid', 'outline', 'custom' ), true ) ? $st : 'solid';
 		}
 		if ( isset( $input['woocommerce_ticket_btn_primary_bg'] ) ) {
@@ -850,20 +846,20 @@ class TWEC_Admin {
 			$m = sanitize_key( (string) wp_unslash( $input['woocommerce_ticket_btn_secondary_mode'] ) );
 			$sanitized['woocommerce_ticket_btn_secondary_mode'] = in_array( $m, array( 'outline', 'ghost', 'muted' ), true ) ? $m : 'outline';
 		}
-		$sanitized['event_reminders_enabled']     = ( ! empty( $input['event_reminders_enabled'] ) ) ? 'yes' : 'no';
+		$sanitized['event_reminders_enabled'] = ( ! empty( $input['event_reminders_enabled'] ) ) ? 'yes' : 'no';
 		if ( isset( $input['reminder_offset_hours'] ) ) {
-			$ro = max( 1, min( 168, (int) wp_unslash( $input['reminder_offset_hours'] ) ) );
+			$ro                                 = max( 1, min( 168, (int) wp_unslash( $input['reminder_offset_hours'] ) ) );
 			$sanitized['reminder_offset_hours'] = $ro;
 		}
 
-		$sanitized['ai_enabled']          = ( ! empty( $input['ai_enabled'] ) ) ? 'yes' : 'no';
-		$sanitized['ai_admin_assist']     = ( ! empty( $input['ai_admin_assist'] ) ) ? 'yes' : 'no';
-		$sanitized['ai_abilities']        = ( ! empty( $input['ai_abilities'] ) ) ? 'yes' : 'no';
-		$sanitized['ai_public_assistant'] = ( ! empty( $input['ai_public_assistant'] ) ) ? 'yes' : 'no';
-		$sanitized['ai_command_palette']     = ( ! empty( $input['ai_command_palette'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_enabled']           = ( ! empty( $input['ai_enabled'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_admin_assist']      = ( ! empty( $input['ai_admin_assist'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_abilities']         = ( ! empty( $input['ai_abilities'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_public_assistant']  = ( ! empty( $input['ai_public_assistant'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_command_palette']   = ( ! empty( $input['ai_command_palette'] ) ) ? 'yes' : 'no';
 		$sanitized['ai_bulk_publish_prep'] = ( ! empty( $input['ai_bulk_publish_prep'] ) ) ? 'yes' : 'no';
 		if ( isset( $input['ai_temperature_preset'] ) ) {
-			$tp = sanitize_key( (string) wp_unslash( $input['ai_temperature_preset'] ) );
+			$tp                                 = sanitize_key( (string) wp_unslash( $input['ai_temperature_preset'] ) );
 			$sanitized['ai_temperature_preset'] = in_array( $tp, array( 'factual', 'creative' ), true ) ? $tp : 'factual';
 		}
 
@@ -871,7 +867,7 @@ class TWEC_Admin {
 			$sanitized = array_merge( $sanitized, $this->sanitize_email_only_settings_fields( $input ) );
 		}
 
-		$merged   = array_merge( $previous, $sanitized );
+		$merged = array_merge( $previous, $sanitized );
 		if ( isset( $sanitized['hierarchical_event_urls'] ) && isset( $previous['hierarchical_event_urls'] ) && $sanitized['hierarchical_event_urls'] !== $previous['hierarchical_event_urls'] ) {
 			$merged['_twec_flush_rewrite_flag'] = 1;
 		}
@@ -899,10 +895,10 @@ class TWEC_Admin {
 		if ( 'twec_event' !== $post->post_type || ! current_user_can( 'edit_post', $post->ID ) ) {
 			return $actions;
 		}
-		$url = wp_nonce_url(
+		$url                       = wp_nonce_url(
 			add_query_arg(
 				array(
-					'post_type'     => 'twec_event',
+					'post_type'      => 'twec_event',
 					'twec_duplicate' => (int) $post->ID,
 				),
 				admin_url( 'edit.php' )
@@ -926,11 +922,7 @@ class TWEC_Admin {
 		if ( ! $id ) {
 			wp_die( esc_html__( 'Invalid event.', 'planit-event-manager' ), esc_html__( 'Duplicate event', 'planit-event-manager' ), array( 'response' => 403 ) );
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- GET action verified below with intent-specific nonce.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified with wp_verify_nonce( wp_unslash( ... ), ... ).
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'twec_duplicate_event_' . $id ) ) {
-			wp_die( esc_html__( 'Security check failed. Please try again.', 'planit-event-manager' ), esc_html__( 'Duplicate event', 'planit-event-manager' ), array( 'response' => 403 ) );
-		}
+		twec_verify_get_nonce_or_die( 'twec_duplicate_event_' . $id );
 		if ( ! current_user_can( 'edit_post', $id ) ) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'planit-event-manager' ), esc_html__( 'Duplicate event', 'planit-event-manager' ), array( 'response' => 403 ) );
 		}
@@ -1014,7 +1006,7 @@ class TWEC_Admin {
 			$out['payment_receipt_body_html'] = wp_kses_post( wp_unslash( (string) $input['payment_receipt_body_html'] ) );
 		}
 		if ( isset( $input['payment_receipt_bcc_admin'] ) ) {
-			$bcc = sanitize_email( wp_unslash( (string) $input['payment_receipt_bcc_admin'] ) );
+			$bcc                              = sanitize_email( wp_unslash( (string) $input['payment_receipt_bcc_admin'] ) );
 			$out['payment_receipt_bcc_admin'] = ( '' !== $bcc && is_email( $bcc ) ) ? $bcc : '';
 		}
 		return $out;

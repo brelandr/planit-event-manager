@@ -116,7 +116,7 @@ class TWEC_Recurring {
 					<?php esc_html_e( 'Advanced: RRULE + holiday / date exclusions', 'planit-event-manager' ); ?>
 				</label>
 			</p>
-			<div id="twec-advanced-recurrence" style="<?php echo '1' === $advanced ? '' : 'display:none;'; ?>">
+			<div id="twec-advanced-recurrence" style="<?php echo esc_attr( '1' === $advanced ? '' : 'display:none;' ); ?>">
 				<p>
 					<label for="twec_rrule_preset"><?php esc_html_e( 'Quick preset (fills RRULE field)', 'planit-event-manager' ); ?></label>
 					<select id="twec_rrule_preset" class="widefat">
@@ -147,57 +147,6 @@ class TWEC_Recurring {
 		<input type="hidden" id="twec_rrule_rest_nonce" value="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" />
 		<input type="hidden" id="twec_rrule_preview_rest_endpoint" value="<?php echo esc_url( rest_url( 'planit/v1/recurrence' ) ); ?>" />
 
-		<script>
-		jQuery(function($) {
-			$('#twec_recurrence_advanced_cb').on('change', function() {
-				$('#twec-advanced-recurrence').toggle($(this).is(':checked'));
-			});
-			$('#twec_rrule_preset').on('change', function() {
-				var v = $(this).val();
-				if (v) $('#twec_recurrence_rrule').val(v);
-			});
-			$('.twec_rrule_preview_btn').on('click', function() {
-				var btn = $(this), out = $('#twec_rrule_preview_out'), root = $('#twec_rrule_preview_rest_endpoint').val();
-				var nonce = $('#twec_rrule_rest_nonce').val();
-				out.text('<?php echo esc_js( __( 'Running preview…', 'planit-event-manager' ) ); ?>');
-				$.ajax({
-					url: (root.replace(/\/$/, '')) + '/preview',
-					method: 'POST',
-					beforeSend: function(xhr) {
-						xhr.setRequestHeader('X-WP-Nonce', nonce);
-					},
-					contentType: 'application/json',
-					data: JSON.stringify({
-						nonce: nonce,
-						post_id: parseInt(btn.closest('form').find('#post_ID').val(), 10) || <?php echo (int) $post->ID; ?>,
-						rrule: $('#twec_recurrence_rrule').val(),
-						exdates: $('#twec_recurrence_exdates').val()
-					}),
-					success: function(res) {
-						if (!res || !res.preview || !res.preview.length) {
-							out.text('<?php echo esc_js( __( 'No instances matched for this RRULE (check event dates and exclusions).', 'planit-event-manager' ) ); ?>');
-							return;
-						}
-						var lines = [], i;
-						var maxShow = <?php echo (int) min( TWEC_RRule_Expand::MAX_INSTANCES, 25 ); ?>;
-						for (i = 0; i < res.preview.length && i < maxShow; i++) {
-							lines.push(res.preview[i].start + ' — ' + res.preview[i].end);
-						}
-						if (res.preview.length > maxShow) {
-							lines.push(String(res.preview.length) + '+ <?php echo esc_js( __( 'instances total (truncated)', 'planit-event-manager' ) ); ?>');
-						}
-						out.text(lines.join('\n'));
-					},
-					error: function(xhr) {
-						var jp = xhr.responseJSON;
-						var m = jp && (jp.message || (jp.data && jp.data.message)) ? (jp.message || jp.data.message) : xhr.statusText;
-						out.text(m || '<?php echo esc_js( __( 'Preview failed.', 'planit-event-manager' ) ); ?>');
-					}
-				});
-			});
-		});
-		</script>
-
 		<?php
 	}
 
@@ -207,8 +156,7 @@ class TWEC_Recurring {
 	 * @param int $post_id Post ID.
 	 */
 	public function save_recurring_meta( $post_id ) {
-		// Verify nonce. Must sanitize with sanitize_text_field() because wp_verify_nonce() is pluggable.
-		if ( ! isset( $_POST['twec_recurring_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['twec_recurring_nonce'] ) ), 'twec_save_recurring' ) ) {
+		if ( ! twec_verify_post_nonce_field( 'twec_recurring_nonce', 'twec_save_recurring' ) ) {
 			return;
 		}
 
@@ -228,11 +176,11 @@ class TWEC_Recurring {
 		update_post_meta( $post_id, '_twec_is_recurring', $is_recurring );
 
 		if ( $is_recurring ) {
-			$adv                     = isset( $_POST['twec_recurrence_advanced'] ) ? '1' : '0';
-			$prev_rrule_meta         = (string) get_post_meta( $post_id, '_twec_recurrence_rrule', true );
-			$prev_ex_meta            = (string) get_post_meta( $post_id, '_twec_recurrence_exdates', true );
-			$incoming_rrule          = isset( $_POST['twec_recurrence_rrule'] ) ? sanitize_textarea_field( wp_unslash( $_POST['twec_recurrence_rrule'] ) ) : '';
-			$incoming_ex             = isset( $_POST['twec_recurrence_exdates'] ) ? sanitize_textarea_field( wp_unslash( $_POST['twec_recurrence_exdates'] ) ) : '';
+			$adv             = isset( $_POST['twec_recurrence_advanced'] ) ? '1' : '0';
+			$prev_rrule_meta = (string) get_post_meta( $post_id, '_twec_recurrence_rrule', true );
+			$prev_ex_meta    = (string) get_post_meta( $post_id, '_twec_recurrence_exdates', true );
+			$incoming_rrule  = isset( $_POST['twec_recurrence_rrule'] ) ? sanitize_textarea_field( wp_unslash( $_POST['twec_recurrence_rrule'] ) ) : '';
+			$incoming_ex     = isset( $_POST['twec_recurrence_exdates'] ) ? sanitize_textarea_field( wp_unslash( $_POST['twec_recurrence_exdates'] ) ) : '';
 
 			update_post_meta( $post_id, '_twec_recurrence_advanced', $adv );
 			if ( '1' === $adv ) {
@@ -299,7 +247,7 @@ class TWEC_Recurring {
 	public function enqueue_admin_scripts( $hook ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Signature matches WordPress hook.
 		$scr = '';
 		if ( function_exists( 'get_current_screen' ) ) {
-			$s = get_current_screen();
+			$s   = get_current_screen();
 			$scr = is_object( $s ) ? (string) $s->base : '';
 		}
 		if ( 'post' !== $scr ) {
@@ -309,7 +257,37 @@ class TWEC_Recurring {
 		if ( ! $post instanceof WP_Post || 'twec_event' !== get_post_type( $post ) ) {
 			return;
 		}
+
+		$base = defined( 'PLANIT_EVENT_MANAGER_URL' ) ? (string) PLANIT_EVENT_MANAGER_URL : '';
+		if ( '' === $base && defined( 'TWEC_PLUGIN_URL' ) ) {
+			$base = (string) TWEC_PLUGIN_URL;
+		}
+		if ( '' === $base ) {
+			return;
+		}
+
+		$version = defined( 'PLANIT_EVENT_MANAGER_VERSION' ) ? (string) PLANIT_EVENT_MANAGER_VERSION : '1.0.0';
+
 		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script(
+			'twec-rrule-preview',
+			$base . 'admin/js/twec-rrule-preview.js',
+			array( 'jquery' ),
+			$version,
+			true
+		);
+		wp_localize_script(
+			'twec-rrule-preview',
+			'twecRrulePreviewL10n',
+			array(
+				'postId'        => (int) $post->ID,
+				'maxShow'       => (int) min( TWEC_RRule_Expand::MAX_INSTANCES, 25 ),
+				'running'       => __( 'Running preview…', 'planit-event-manager' ),
+				'noInstances'   => __( 'No instances matched for this RRULE (check event dates and exclusions).', 'planit-event-manager' ),
+				'truncated'     => __( 'instances total (truncated)', 'planit-event-manager' ),
+				'previewFailed' => __( 'Preview failed.', 'planit-event-manager' ),
+			)
+		);
 	}
 
 	/**
@@ -326,25 +304,25 @@ class TWEC_Recurring {
 				'permission_callback' => array( __CLASS__, 'rest_rrule_preview_perm' ),
 				'callback'            => array( __CLASS__, 'rest_rrule_preview' ),
 				'args'                => array(
-					'nonce'    => array(
+					'nonce'   => array(
 						'description'       => __( 'REST API nonce (`wp_rest`). May be provided in JSON body or as a param.', 'planit-event-manager' ),
 						'type'              => 'string',
 						'required'          => false,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'post_id'  => array(
+					'post_id' => array(
 						'description'       => __( 'Event post ID to evaluate recurrence against.', 'planit-event-manager' ),
 						'type'              => 'integer',
 						'required'          => false,
 						'sanitize_callback' => 'absint',
 					),
-					'rrule'    => array(
+					'rrule'   => array(
 						'description'       => __( 'RFC 5545 RRULE string.', 'planit-event-manager' ),
 						'type'              => 'string',
 						'required'          => false,
 						'sanitize_callback' => 'sanitize_textarea_field',
 					),
-					'exdates'  => array(
+					'exdates' => array(
 						'description'       => __( 'Optional EXDATE list (comma/newline separated).', 'planit-event-manager' ),
 						'type'              => 'string',
 						'required'          => false,

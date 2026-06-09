@@ -202,7 +202,7 @@ class TWEC_Payments_PayPal {
 			),
 			'body'    => 'grant_type=client_credentials',
 		);
-		$resp = wp_remote_post( $base . '/v1/oauth2/token', $args );
+		$resp = wp_safe_remote_post( $base . '/v1/oauth2/token', $args );
 		self::agent_log(
 			'paypal_token_response',
 			array(
@@ -394,10 +394,15 @@ class TWEC_Payments_PayPal {
 			),
 			'body'    => $body,
 		);
-		$resp    = wp_remote_post( $base . '/v2/checkout/orders', $args );
-		$hcode   = is_wp_error( $resp ) ? 0 : (int) wp_remote_retrieve_response_code( $resp );
-		$raw     = is_wp_error( $resp ) ? '' : (string) wp_remote_retrieve_body( $resp );
-		$data    = is_array( json_decode( $raw, true ) ) ? json_decode( $raw, true ) : array();
+		$resp = wp_safe_remote_post( $base . '/v2/checkout/orders', $args );
+		if ( is_wp_error( $resp ) ) {
+			return $resp;
+		}
+
+		$hcode = (int) wp_remote_retrieve_response_code( $resp );
+		$raw   = (string) wp_remote_retrieve_body( $resp );
+		$data  = json_decode( $raw, true );
+		$data  = is_array( $data ) ? $data : array();
 		$approve = '';
 		$oid     = '';
 		if ( is_array( $data ) ) {
@@ -420,11 +425,8 @@ class TWEC_Payments_PayPal {
 			),
 			'H2'
 		);
-		if ( is_wp_error( $resp ) ) {
-			return $resp;
-		}
 		if ( $hcode < 200 || $hcode >= 300 ) {
-			$msg = is_array( $data ) && isset( $data['message'] ) ? (string) $data['message'] : __( 'PayPal order could not be created.', 'planit-event-manager' );
+			$msg = isset( $data['message'] ) ? sanitize_text_field( (string) $data['message'] ) : __( 'PayPal order could not be created.', 'planit-event-manager' );
 			return new WP_Error( 'twec_paypal_order', $msg, array( 'status' => 400 ) );
 		}
 		if ( '' === $approve ) {
@@ -573,7 +575,7 @@ class TWEC_Payments_PayPal {
 			),
 			'body'    => is_string( $body ) ? $body : '{}',
 		);
-		$resp = wp_remote_post( $base . '/v1/notifications/verify-webhook-signature', $args );
+		$resp = wp_safe_remote_post( $base . '/v1/notifications/verify-webhook-signature', $args );
 		if ( is_wp_error( $resp ) ) {
 			self::agent_log( 'paypal_verify_wp_error', array( 'msg' => $resp->get_error_message() ), 'H3' );
 			return false;

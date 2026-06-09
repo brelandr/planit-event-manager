@@ -19,15 +19,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 if ( ! class_exists( 'TWEC_Deactivator', false ) ) {
 
-class TWEC_Deactivator {
+	class TWEC_Deactivator {
 
-	/**
-	 * Deactivate the plugin.
-	 */
-	public static function deactivate() {
-		// Flush rewrite rules.
-		flush_rewrite_rules();
+		/**
+		 * Deactivate the plugin.
+		 */
+		public static function deactivate() {
+			// Flush rewrite rules.
+			flush_rewrite_rules();
+		}
 	}
-}
 
 }

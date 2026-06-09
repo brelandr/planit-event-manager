@@ -278,7 +278,7 @@ class TWEC_REST {
 	 * @return array<string, mixed>|WP_Error
 	 */
 	public static function create_event_draft_from_args( $args ) {
-		$args = is_array( $args ) ? $args : array();
+		$args  = is_array( $args ) ? $args : array();
 		$title = isset( $args['title'] ) ? sanitize_text_field( (string) $args['title'] ) : '';
 		if ( '' === trim( $title ) ) {
 			return new WP_Error( 'twec_draft_title', __( 'Title is required.', 'planit-event-manager' ) );
