@@ -272,6 +272,313 @@ class TWEC_REST {
 	}
 
 	/**
+	 * Create a draft event from a plain argument array (Abilities API / integrations).
+	 *
+	 * @param array<string, mixed> $args title, start_date, end_date, all_day?, venue_id?, start_time?, end_time?.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public static function create_event_draft_from_args( $args ) {
+		$args = is_array( $args ) ? $args : array();
+		$title = isset( $args['title'] ) ? sanitize_text_field( (string) $args['title'] ) : '';
+		if ( '' === trim( $title ) ) {
+			return new WP_Error( 'twec_draft_title', __( 'Title is required.', 'planit-event-manager' ) );
+		}
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			return new WP_Error( 'twec_draft_forbidden', __( 'You do not have permission to create events.', 'planit-event-manager' ), array( 'status' => 403 ) );
+		}
+
+		$all_day  = ! empty( $args['all_day'] );
+		$start_d  = isset( $args['start_date'] ) ? sanitize_text_field( (string) $args['start_date'] ) : '';
+		$end_d    = isset( $args['end_date'] ) ? sanitize_text_field( (string) $args['end_date'] ) : '';
+		$start_ti = isset( $args['start_time'] ) ? sanitize_text_field( (string) $args['start_time'] ) : '';
+		$end_ti   = isset( $args['end_time'] ) ? sanitize_text_field( (string) $args['end_time'] ) : '';
+
+		if ( '' === $start_d || '' === $end_d ) {
+			return new WP_Error( 'twec_draft_dates', __( 'start_date and end_date are required.', 'planit-event-manager' ), array( 'status' => 400 ) );
+		}
+
+		if ( ! class_exists( 'TWEC_Event_Datetime', false ) ) {
+			return new WP_Error( 'twec_draft_unavailable', __( 'Event datetime helper is not available.', 'planit-event-manager' ) );
+		}
+
+		$built = TWEC_Event_Datetime::validate_and_build_storage( $all_day, $start_d, $end_d, $start_ti, $end_ti );
+		if ( is_wp_error( $built ) ) {
+			return $built;
+		}
+
+		$post_id = wp_insert_post(
+			array(
+				'post_title'  => $title,
+				'post_type'   => 'twec_event',
+				'post_status' => 'draft',
+			),
+			true
+		);
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+		$post_id = (int) $post_id;
+		if ( $post_id <= 0 ) {
+			return new WP_Error( 'twec_draft_insert', __( 'Could not create the event.', 'planit-event-manager' ) );
+		}
+
+		update_post_meta( $post_id, '_twec_event_all_day', ( '1' === $built['all_day_meta'] ) ? '1' : '0' );
+		update_post_meta( $post_id, '_twec_event_start_date', $built['start_dt'] );
+		update_post_meta( $post_id, '_twec_event_end_date', $built['end_dt'] );
+		update_post_meta( $post_id, '_twec_event_start_time', $built['start_t'] );
+		update_post_meta( $post_id, '_twec_event_end_time', $built['end_t'] );
+
+		$venue_id = isset( $args['venue_id'] ) ? absint( $args['venue_id'] ) : 0;
+		if ( $venue_id > 0 && 'twec_venue' === get_post_type( $venue_id ) ) {
+			update_post_meta( $post_id, '_twec_event_venue', $venue_id );
+		}
+		$organizer_id = isset( $args['organizer_id'] ) ? absint( $args['organizer_id'] ) : 0;
+		if ( $organizer_id > 0 && 'twec_organizer' === get_post_type( $organizer_id ) ) {
+			update_post_meta( $post_id, '_twec_event_organizer', $organizer_id );
+		}
+		if ( ! empty( $args['content'] ) ) {
+			wp_update_post(
+				array(
+					'ID'           => $post_id,
+					'post_content' => wp_kses_post( (string) $args['content'] ),
+				)
+			);
+		}
+		if ( ! empty( $args['excerpt'] ) ) {
+			wp_update_post(
+				array(
+					'ID'           => $post_id,
+					'post_excerpt' => sanitize_text_field( (string) $args['excerpt'] ),
+				)
+			);
+		}
+
+		/**
+		 * Fires after PlanIt creates an event draft via REST or abilities.
+		 *
+		 * @param int                  $post_id Event ID.
+		 * @param array<string, mixed> $args    Args used to create the draft.
+		 */
+		do_action( 'twec_after_event_save', $post_id, $args );
+
+		$edit = get_edit_post_link( $post_id, 'raw' );
+		return array(
+			'id'        => $post_id,
+			'edit_link' => $edit ? (string) $edit : '',
+		);
+	}
+
+	/**
+	 * Resolve a venue post ID by title (existing venues only).
+	 *
+	 * @param string $name Venue title.
+	 * @return int
+	 */
+	public static function resolve_venue_id_by_name( $name ) {
+		$name = trim( (string) $name );
+		if ( '' === $name ) {
+			return 0;
+		}
+		$posts = get_posts(
+			array(
+				'post_type'              => 'twec_venue',
+				'title'                  => $name,
+				'posts_per_page'         => 1,
+				'post_status'            => array( 'publish', 'draft', 'private' ),
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+		return ! empty( $posts[0] ) ? (int) $posts[0]->ID : 0;
+	}
+
+	/**
+	 * Resolve an organizer post ID by title (existing organizers only).
+	 *
+	 * @param string $name Organizer title.
+	 * @return int
+	 */
+	public static function resolve_organizer_id_by_name( $name ) {
+		$name = trim( (string) $name );
+		if ( '' === $name ) {
+			return 0;
+		}
+		$posts = get_posts(
+			array(
+				'post_type'              => 'twec_organizer',
+				'title'                  => $name,
+				'posts_per_page'         => 1,
+				'post_status'            => array( 'publish', 'draft', 'private' ),
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+		return ! empty( $posts[0] ) ? (int) $posts[0]->ID : 0;
+	}
+
+	/**
+	 * Update an existing event from a plain argument array.
+	 *
+	 * @param array<string, mixed> $args Partial event fields keyed by event_id.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public static function update_event_from_args( $args ) {
+		$args     = is_array( $args ) ? $args : array();
+		$event_id = isset( $args['event_id'] ) ? absint( $args['event_id'] ) : 0;
+		if ( $event_id <= 0 || 'twec_event' !== get_post_type( $event_id ) ) {
+			return new WP_Error( 'twec_update_invalid', __( 'Invalid event.', 'planit-event-manager' ), array( 'status' => 400 ) );
+		}
+		if ( ! current_user_can( 'edit_post', $event_id ) ) {
+			return new WP_Error( 'twec_update_forbidden', __( 'You cannot edit this event.', 'planit-event-manager' ), array( 'status' => 403 ) );
+		}
+
+		$patch = array( 'ID' => $event_id );
+		if ( isset( $args['title'] ) && '' !== trim( (string) $args['title'] ) ) {
+			$patch['post_title'] = sanitize_text_field( (string) $args['title'] );
+		}
+		if ( isset( $args['content'] ) ) {
+			$patch['post_content'] = wp_kses_post( (string) $args['content'] );
+		}
+		if ( isset( $args['excerpt'] ) ) {
+			$patch['post_excerpt'] = sanitize_text_field( (string) $args['excerpt'] );
+		}
+		if ( count( $patch ) > 1 ) {
+			$updated = wp_update_post( $patch, true );
+			if ( is_wp_error( $updated ) ) {
+				return $updated;
+			}
+		}
+
+		if ( isset( $args['all_day'] ) || isset( $args['start_date'] ) || isset( $args['end_date'] ) || isset( $args['start_time'] ) || isset( $args['end_time'] ) ) {
+			$all_day  = isset( $args['all_day'] ) ? (bool) $args['all_day'] : ( '1' === get_post_meta( $event_id, '_twec_event_all_day', true ) );
+			$start_d  = isset( $args['start_date'] ) ? sanitize_text_field( (string) $args['start_date'] ) : '';
+			$end_d    = isset( $args['end_date'] ) ? sanitize_text_field( (string) $args['end_date'] ) : '';
+			$start_ti = isset( $args['start_time'] ) ? sanitize_text_field( (string) $args['start_time'] ) : '';
+			$end_ti   = isset( $args['end_time'] ) ? sanitize_text_field( (string) $args['end_time'] ) : '';
+			if ( '' === $start_d ) {
+				$start_d = substr( (string) get_post_meta( $event_id, '_twec_event_start_date', true ), 0, 10 );
+			}
+			if ( '' === $end_d ) {
+				$end_d = substr( (string) get_post_meta( $event_id, '_twec_event_end_date', true ), 0, 10 );
+			}
+			if ( class_exists( 'TWEC_Event_Datetime', false ) && '' !== $start_d && '' !== $end_d ) {
+				$built = TWEC_Event_Datetime::validate_and_build_storage( $all_day, $start_d, $end_d, $start_ti, $end_ti );
+				if ( is_wp_error( $built ) ) {
+					return $built;
+				}
+				update_post_meta( $event_id, '_twec_event_all_day', ( '1' === $built['all_day_meta'] ) ? '1' : '0' );
+				update_post_meta( $event_id, '_twec_event_start_date', $built['start_dt'] );
+				update_post_meta( $event_id, '_twec_event_end_date', $built['end_dt'] );
+				update_post_meta( $event_id, '_twec_event_start_time', $built['start_t'] );
+				update_post_meta( $event_id, '_twec_event_end_time', $built['end_t'] );
+			}
+		}
+
+		if ( isset( $args['venue_id'] ) ) {
+			$venue_id = absint( $args['venue_id'] );
+			if ( $venue_id > 0 && 'twec_venue' === get_post_type( $venue_id ) ) {
+				update_post_meta( $event_id, '_twec_event_venue', $venue_id );
+			}
+		}
+		if ( isset( $args['organizer_id'] ) ) {
+			$organizer_id = absint( $args['organizer_id'] );
+			if ( $organizer_id > 0 && 'twec_organizer' === get_post_type( $organizer_id ) ) {
+				update_post_meta( $event_id, '_twec_event_organizer', $organizer_id );
+			}
+		}
+		if ( ! empty( $args['categories'] ) && is_array( $args['categories'] ) ) {
+			self::assign_taxonomy_slugs( $event_id, 'twec_event_category', $args['categories'], false );
+		}
+		if ( ! empty( $args['tags'] ) && is_array( $args['tags'] ) ) {
+			self::assign_taxonomy_slugs( $event_id, 'twec_event_tag', $args['tags'], false );
+		}
+
+		/**
+		 * Fires after PlanIt updates an event via REST or abilities.
+		 *
+		 * @param int                  $event_id Event ID.
+		 * @param array<string, mixed> $args     Update args.
+		 */
+		do_action( 'twec_after_event_save', $event_id, $args );
+
+		$edit = get_edit_post_link( $event_id, 'raw' );
+		return array(
+			'id'        => $event_id,
+			'edit_link' => $edit ? (string) $edit : '',
+		);
+	}
+
+	/**
+	 * Resolve taxonomy slugs to term IDs, creating missing terms when allowed.
+	 *
+	 * @param string   $taxonomy Taxonomy name.
+	 * @param string[] $slugs    Term slugs.
+	 * @return int[]
+	 */
+	public static function resolve_taxonomy_slugs_to_term_ids( $taxonomy, $slugs ) {
+		$taxonomy = sanitize_key( (string) $taxonomy );
+		if ( '' === $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
+			return array();
+		}
+
+		$slugs    = is_array( $slugs ) ? $slugs : array();
+		$term_ids = array();
+
+		foreach ( array_unique( array_filter( array_map( 'sanitize_key', $slugs ) ) ) as $slug ) {
+			if ( '' === $slug ) {
+				continue;
+			}
+
+			$term = get_term_by( 'slug', $slug, $taxonomy );
+			if ( $term && ! is_wp_error( $term ) ) {
+				$term_ids[] = (int) $term->term_id;
+				continue;
+			}
+
+			$name    = ucwords( str_replace( '-', ' ', $slug ) );
+			$created = wp_insert_term(
+				$name,
+				$taxonomy,
+				array( 'slug' => $slug )
+			);
+			if ( is_wp_error( $created ) ) {
+				if ( isset( $created->error_data['term_exists'] ) ) {
+					$term_ids[] = (int) $created->error_data['term_exists'];
+				}
+				continue;
+			}
+			if ( isset( $created['term_id'] ) ) {
+				$term_ids[] = (int) $created['term_id'];
+			}
+		}
+
+		return array_values( array_unique( $term_ids ) );
+	}
+
+	/**
+	 * Assign taxonomy terms to a post using slugs (creates terms when missing).
+	 *
+	 * @param int      $post_id  Post ID.
+	 * @param string   $taxonomy Taxonomy name.
+	 * @param string[] $slugs    Term slugs.
+	 * @param bool     $append   Whether to append instead of replace.
+	 * @return void
+	 */
+	public static function assign_taxonomy_slugs( $post_id, $taxonomy, $slugs, $append = false ) {
+		$post_id = absint( $post_id );
+		if ( $post_id <= 0 ) {
+			return;
+		}
+
+		$term_ids = self::resolve_taxonomy_slugs_to_term_ids( $taxonomy, $slugs );
+		if ( empty( $term_ids ) ) {
+			return;
+		}
+
+		wp_set_post_terms( $post_id, $term_ids, $taxonomy, (bool) $append );
+	}
+
+	/**
 	 * Expose custom query args to the collection endpoint (documented in REST-API.md).
 	 *
 	 * @param array $params Collection params.

@@ -5,15 +5,14 @@
     'use strict';
 
     $(document).ready(function() {
-        // Ensure Event Data meta box is expanded by default
+        // Keep Event Data open; cap body height so title/editor stay visible (classic screens).
+        var metaBoxMaxHeightVh = '50vh';
         var $eventMetaBox = $('#twec_event_details');
         if ($eventMetaBox.length) {
-            // Remove closed class if present
-            $eventMetaBox.removeClass('closed');
-            // Ensure inside is visible
-            $eventMetaBox.find('.inside').show();
-            // Update toggle button state
+            document.documentElement.style.setProperty('--twec-event-metabox-max-height', metaBoxMaxHeightVh);
+            $eventMetaBox.removeClass('closed').addClass('twec-event-details-sized');
             $eventMetaBox.find('.handlediv').attr('aria-expanded', 'true');
+            $eventMetaBox.find('.inside').show();
         }
 
         // Handle all-day event checkbox

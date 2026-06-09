@@ -347,7 +347,83 @@
 		}, 320 );
 	}
 
+	function getMetaBoxMaxHeightVh() {
+		var cfg = window.planitTwecMetaSync;
+		var vh = cfg && cfg.metaBoxMaxHeightVh ? parseInt( cfg.metaBoxMaxHeightVh, 10 ) : 50;
+		if ( isNaN( vh ) || vh < 25 ) {
+			vh = 50;
+		}
+		return vh;
+	}
+
+	function eventMetaBoxHasContent( box ) {
+		return !! (
+			box.querySelector( '.twec-event-details-meta-box' ) ||
+			box.querySelector( '#twec_start_date' )
+		);
+	}
+
+	function ensureMetaBoxesFooterVisible() {
+		var selectors = [
+			'.edit-post-meta-boxes-area',
+			'.edit-post-meta-boxes-main',
+			'.edit-post-meta-boxes-main__presenter',
+		];
+		selectors.forEach( function ( sel ) {
+			document.querySelectorAll( sel ).forEach( function ( el ) {
+				el.classList.remove( 'is-hidden' );
+				el.removeAttribute( 'hidden' );
+			} );
+		} );
+	}
+
+	function ensureEventMetaBoxOpen() {
+		ensureMetaBoxesFooterVisible();
+
+		var boxes = document.querySelectorAll( '#twec_event_details' );
+		if ( ! boxes.length ) {
+			return false;
+		}
+
+		var hasContent = false;
+		boxes.forEach( function ( box ) {
+			box.classList.remove( 'closed' );
+			var toggle = box.querySelector( '.handlediv' );
+			if ( toggle ) {
+				toggle.setAttribute( 'aria-expanded', 'true' );
+			}
+			var inside = box.querySelector( '.inside' );
+			if ( inside ) {
+				inside.style.display = 'block';
+			}
+			if ( eventMetaBoxHasContent( box ) ) {
+				hasContent = true;
+				box.classList.add( 'twec-event-details-sized' );
+			}
+		} );
+
+		if ( hasContent ) {
+			document.documentElement.style.setProperty(
+				'--twec-event-metabox-max-height',
+				getMetaBoxMaxHeightVh() + 'vh'
+			);
+		}
+
+		return hasContent;
+	}
+
+	function watchEventMetaBox() {
+		var attempts = 0;
+		var timer = window.setInterval( function () {
+			attempts += 1;
+			if ( ensureEventMetaBoxOpen() || attempts > 40 ) {
+				window.clearInterval( timer );
+			}
+		}, 250 );
+	}
+
 	domReady( function () {
+		watchEventMetaBox();
 		if ( isDebug() && window.console && console.log ) {
 			console.log( '[PlanIt twec] metabox REST sync initialized' );
 		}

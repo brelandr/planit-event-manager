@@ -206,25 +206,29 @@ class TWEC_Blocks_Core {
 		);
 
 		$compact_attributes = array(
-			'perPage'      => array(
+			'perPage'             => array(
 				'type'    => 'number',
 				'default' => 25,
 			),
-			'pastEvents'   => array(
+			'pastEvents'          => array(
 				'type'    => 'string',
 				'default' => 'hide',
 			),
-			'categorySlug' => array(
+			'categorySlug'        => array(
 				'type'    => 'string',
 				'default' => '',
 			),
-			'tagSlug'      => array(
+			'tagSlug'             => array(
 				'type'    => 'string',
 				'default' => '',
 			),
-			'linkBehavior' => array(
+			'linkBehavior'        => array(
 				'type'    => 'string',
 				'default' => 'modal',
+			),
+			'enableInteractivity' => array(
+				'type'    => 'boolean',
+				'default' => true,
 			),
 		);
 
@@ -236,6 +240,30 @@ class TWEC_Blocks_Core {
 					'editor_script'   => 'planit-twec-blocks-core',
 					'attributes'      => $compact_attributes,
 					'render_callback' => array( __CLASS__, 'render_compact_list' ),
+				),
+				$editor_style_args
+			)
+		);
+
+		$assistant_attributes = array(
+			'heading' => array(
+				'type'    => 'string',
+				'default' => '',
+			),
+			'days'    => array(
+				'type'    => 'number',
+				'default' => 14,
+			),
+		);
+
+		register_block_type(
+			'planit-event-manager/event-assistant',
+			array_merge(
+				array(
+					'api_version'     => 2,
+					'editor_script'   => 'planit-twec-blocks-core',
+					'attributes'      => $assistant_attributes,
+					'render_callback' => array( __CLASS__, 'render_event_assistant' ),
 				),
 				$editor_style_args
 			)
@@ -473,7 +501,9 @@ class TWEC_Blocks_Core {
 			$link = 'modal';
 		}
 
-		$shortcode = '[twec_compact_list per_page="' . absint( $per ) . '" past_events="' . esc_attr( $past ) . '" link_behavior="' . esc_attr( $link ) . '"';
+		$use_ia    = ! $is_editor && ! empty( $attributes['enableInteractivity'] );
+		$ia        = $use_ia ? 'yes' : 'no';
+		$shortcode = '[twec_compact_list per_page="' . absint( $per ) . '" past_events="' . esc_attr( $past ) . '" link_behavior="' . esc_attr( $link ) . '" interactivity="' . esc_attr( $ia ) . '"';
 		$category  = self::slug_attr( $attributes['categorySlug'] ?? '' );
 		$tag       = self::slug_attr( $attributes['tagSlug'] ?? '' );
 
@@ -490,6 +520,59 @@ class TWEC_Blocks_Core {
 			return self::wrap_editor_live_preview_html( $html );
 		}
 
+		return $html;
+	}
+
+	/**
+	 * Render event assistant block.
+	 *
+	 * @param array    $attributes Block attributes.
+	 * @param string   $content    Block content.
+	 * @param WP_Block $block      Block object.
+	 * @return string
+	 */
+	public static function render_event_assistant( $attributes, $content, $block ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+		$is_editor = self::is_block_editor_renderer_request();
+
+		if ( $is_editor && ! self::use_editor_live_preview() ) {
+			return self::block_editor_preview_placeholder_html(
+				__( 'PlanIt Event Assistant preview. Enable AI under Events → Settings on the front end.', 'planit-event-manager' )
+			);
+		}
+
+		if ( ! class_exists( 'TWEC_AI', false ) || ! TWEC_AI::is_public_assistant_enabled() ) {
+			if ( $is_editor ) {
+				return self::block_editor_preview_placeholder_html(
+					__( 'Event Assistant is disabled. Enable PlanIt AI and the public assistant under Events → Settings.', 'planit-event-manager' )
+				);
+			}
+			return '';
+		}
+
+		if ( class_exists( 'TWEC_AI', false ) && method_exists( 'TWEC_AI', 'enqueue_assistant_assets' ) ) {
+			TWEC_AI::enqueue_assistant_assets();
+		}
+
+		$heading = isset( $attributes['heading'] ) ? sanitize_text_field( (string) $attributes['heading'] ) : '';
+		if ( '' === $heading ) {
+			$heading = __( 'Ask about upcoming events', 'planit-event-manager' );
+		}
+		$placeholder = esc_attr__( 'What is happening this weekend?', 'planit-event-manager' );
+		$submit      = esc_attr__( 'Ask', 'planit-event-manager' );
+
+		$html  = '<div class="twec-event-assistant" data-days="' . esc_attr( (string) ( isset( $attributes['days'] ) ? max( 1, (int) $attributes['days'] ) : 14 ) ) . '">';
+		$html .= '<h3 class="twec-event-assistant__heading">' . esc_html( $heading ) . '</h3>';
+		$html .= '<form class="twec-event-assistant__form" action="#" method="post">';
+		$html .= '<input type="text" class="twec-event-assistant__input" name="twec_assistant_query" placeholder="' . $placeholder . '" aria-label="' . $placeholder . '" />';
+		$html .= '<button type="submit" class="twec-event-assistant__submit button">' . esc_html( $submit ) . '</button>';
+		$html .= '</form>';
+		$html .= '<div class="twec-event-assistant__answer" aria-live="polite"></div>';
+		$html .= '<div class="twec-event-assistant__events"></div>';
+		$html .= '</div>';
+
+		if ( $is_editor ) {
+			return self::wrap_editor_live_preview_html( $html );
+		}
 		return $html;
 	}
 }

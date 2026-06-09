@@ -16,7 +16,7 @@ If clicking on events shows a 404 error, you need to flush the permalink structu
 
 ### Option 3: Deactivate/Reactivate
 1. Go to **Plugins** in WordPress admin
-2. Deactivate "The WordPress Event Calendar"
+2. Deactivate "The Event Calendar"
 3. Reactivate it
 4. This will automatically flush rewrite rules
 

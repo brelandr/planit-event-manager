@@ -56,6 +56,11 @@ A free WordPress event calendar plugin with calendar views, event management, ve
 
 Use shortcode `[twec_calendar]` to display the calendar or visit the events archive page.
 
+## Development
+
+- **PHPUnit / PHPCS:** From the plugin directory, run `composer install` then `./vendor/bin/phpunit` or `composer test`. Focused PHPCS: `composer lint` ([`phpcs.xml.dist`](phpcs.xml.dist)). GitHub Actions runs both on push/PR to `main`, `master`, or `develop`.
+- **Shared RRULE:** Premium is the canonical `includes/twec-rrule.php`; after upstream changes, run `planit-event-manager-premium/scripts/sync-twec-rrule.sh` ([`docs/RRULE-Matrix.md`](docs/RRULE-Matrix.md)).
+
 ## License
 
 GPL-2.0+

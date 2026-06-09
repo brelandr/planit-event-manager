@@ -717,6 +717,13 @@ class TWEC_Admin {
 			$sanitized['calendar_interactivity'] = 'yes';
 		}
 
+		if ( isset( $input['compact_list_interactivity'] ) ) {
+			$c = sanitize_text_field( wp_unslash( $input['compact_list_interactivity'] ) );
+			$sanitized['compact_list_interactivity'] = in_array( $c, array( 'yes', 'no' ), true ) ? $c : 'yes';
+		} else {
+			$sanitized['compact_list_interactivity'] = 'yes';
+		}
+
 		if ( isset( $input['cookieless_view_counter'] ) ) {
 			$v = sanitize_text_field( wp_unslash( $input['cookieless_view_counter'] ) );
 			$sanitized['cookieless_view_counter'] = in_array( $v, array( 'yes', 'no' ), true ) ? $v : 'no';
@@ -847,6 +854,17 @@ class TWEC_Admin {
 		if ( isset( $input['reminder_offset_hours'] ) ) {
 			$ro = max( 1, min( 168, (int) wp_unslash( $input['reminder_offset_hours'] ) ) );
 			$sanitized['reminder_offset_hours'] = $ro;
+		}
+
+		$sanitized['ai_enabled']          = ( ! empty( $input['ai_enabled'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_admin_assist']     = ( ! empty( $input['ai_admin_assist'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_abilities']        = ( ! empty( $input['ai_abilities'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_public_assistant'] = ( ! empty( $input['ai_public_assistant'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_command_palette']     = ( ! empty( $input['ai_command_palette'] ) ) ? 'yes' : 'no';
+		$sanitized['ai_bulk_publish_prep'] = ( ! empty( $input['ai_bulk_publish_prep'] ) ) ? 'yes' : 'no';
+		if ( isset( $input['ai_temperature_preset'] ) ) {
+			$tp = sanitize_key( (string) wp_unslash( $input['ai_temperature_preset'] ) );
+			$sanitized['ai_temperature_preset'] = in_array( $tp, array( 'factual', 'creative' ), true ) ? $tp : 'factual';
 		}
 
 		if ( $is_emails_form ) {

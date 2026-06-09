@@ -20,6 +20,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 class TWEC_Meta_Boxes {
 
 	/**
+	 * Boot meta boxes once per request (safe for free-only and Premium companion runtimes).
+	 *
+	 * @return void
+	 */
+	public static function init() {
+		static $instance = null;
+		if ( null !== $instance ) {
+			return;
+		}
+		$instance = new self();
+	}
+
+	/**
 	 * Initialize meta boxes.
 	 */
 	public function __construct() {
@@ -28,6 +41,7 @@ class TWEC_Meta_Boxes {
 		add_action( 'save_post', array( $this, 'save_venue_meta' ) );
 		add_action( 'save_post', array( $this, 'save_organizer_meta' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_event_metabox_rest_sync' ) );
+		add_filter( 'default_hidden_meta_boxes', array( $this, 'show_event_meta_box_default' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_event_datetime_admin_assets' ) );
 		add_action( 'admin_notices', array( $this, 'maybe_show_event_datetime_notice' ), 11 );
 	}
@@ -63,12 +77,20 @@ class TWEC_Meta_Boxes {
 		if ( defined( 'PLANIT_TWEC_META_SYNC_DEBUG' ) && PLANIT_TWEC_META_SYNC_DEBUG ) {
 			$debug = true;
 		}
+		$meta_box_max_height_vh = (int) apply_filters( 'twec_event_metabox_max_height_vh', 50 );
+		if ( $meta_box_max_height_vh < 25 ) {
+			$meta_box_max_height_vh = 25;
+		} elseif ( $meta_box_max_height_vh > 75 ) {
+			$meta_box_max_height_vh = 75;
+		}
+
 		wp_localize_script(
 			'planit-twec-metabox-rest-sync',
 			'planitTwecMetaSync',
 			array(
-				'debug'          => $debug,
-				'validationI18n' => array(
+				'debug'              => $debug,
+				'metaBoxMaxHeightVh' => $meta_box_max_height_vh,
+				'validationI18n'     => array(
 					'invalidRange' => __( 'End date and time must be on or after the start.', 'planit-event-manager' ),
 					'invalidDates' => __( 'Start and end dates must use Y-m-d.', 'planit-event-manager' ),
 				),
@@ -84,7 +106,21 @@ class TWEC_Meta_Boxes {
 	 * @return array Modified hidden meta boxes.
 	 */
 	public function show_event_meta_box( $hidden, $screen ) {
-		if ( 'twec_event' === $screen->post_type ) {
+		if ( isset( $screen->post_type ) && 'twec_event' === $screen->post_type ) {
+			$hidden = array_diff( $hidden, array( 'twec_event_details' ) );
+		}
+		return $hidden;
+	}
+
+	/**
+	 * Keep Event Data visible for new users (not collapsed by default).
+	 *
+	 * @param array     $hidden Hidden meta boxes.
+	 * @param WP_Screen $screen Screen object.
+	 * @return array
+	 */
+	public function show_event_meta_box_default( $hidden, $screen ) {
+		if ( isset( $screen->post_type ) && 'twec_event' === $screen->post_type ) {
 			$hidden = array_diff( $hidden, array( 'twec_event_details' ) );
 		}
 		return $hidden;

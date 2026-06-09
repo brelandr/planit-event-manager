@@ -1,4 +1,4 @@
-# Features Comparison: The WordPress Event Calendar vs The Events Calendar (Free)
+# Features Comparison: The Event Calendar vs The Events Calendar (Free)
 
 ## ✅ All Free Features Included
 

@@ -28,6 +28,9 @@ class TWEC_Collab_RD {
 	 * @return bool
 	 */
 	public static function editor_experimental_enabled() {
+		if ( class_exists( 'TWEC_AI', false ) && TWEC_AI::is_command_palette_enabled() ) {
+			return true;
+		}
 		if ( defined( 'TWEC_EXPERIMENTAL_EDITOR_COMMANDS' ) && TWEC_EXPERIMENTAL_EDITOR_COMMANDS ) {
 			return true;
 		}
@@ -102,9 +105,12 @@ class TWEC_Collab_RD {
 		}
 
 		$ver  = (string) filemtime( $path );
-		$deps = array( 'wp-data', 'wp-i18n' );
+		$deps = array( 'wp-data', 'wp-i18n', 'wp-api-fetch' );
 		if ( wp_script_is( 'wp-commands', 'registered' ) ) {
 			$deps[] = 'wp-commands';
+		}
+		if ( wp_script_is( 'wp-core-abilities', 'registered' ) ) {
+			$deps[] = 'wp-core-abilities';
 		}
 
 		wp_enqueue_script(
@@ -115,15 +121,25 @@ class TWEC_Collab_RD {
 			true
 		);
 
+		$ai_assist = class_exists( 'TWEC_AI', false ) && TWEC_AI::is_admin_assist_enabled() && TWEC_AI::is_text_generation_available();
+
 		wp_localize_script(
 			'twec-editor-commands',
 			'twecEditorCommands',
 			array(
-				'newEventUrl'   => admin_url( 'post-new.php?post_type=twec_event' ),
-				'settingsUrl'   => admin_url( 'edit.php?post_type=twec_event&page=twec-settings' ),
-				'canManage'     => current_user_can( 'manage_options' ),
-				'addLabel'      => __( 'Add PlanIt event', 'planit-event-manager' ),
-				'settingsLabel' => __( 'PlanIt event calendar settings', 'planit-event-manager' ),
+				'newEventUrl'       => admin_url( 'post-new.php?post_type=twec_event' ),
+				'settingsUrl'       => admin_url( 'edit.php?post_type=twec_event&page=twec-settings' ),
+				'eventsArchiveUrl'  => get_post_type_archive_link( 'twec_event' ),
+				'restRoot'          => esc_url_raw( rest_url() ),
+				'canManage'         => current_user_can( 'manage_options' ),
+				'aiAssistEnabled'   => $ai_assist,
+				'addLabel'          => __( 'Add PlanIt event', 'planit-event-manager' ),
+				'settingsLabel'     => __( 'PlanIt event calendar settings', 'planit-event-manager' ),
+				'weekCommandLabel'  => __( 'List PlanIt events this week', 'planit-event-manager' ),
+				'weekListLabel'     => __( 'Events this week:', 'planit-event-manager' ),
+				'weekEmptyLabel'    => __( 'No PlanIt events scheduled this week.', 'planit-event-manager' ),
+				'aiDraftLabel'      => __( 'Draft PlanIt event with AI', 'planit-event-manager' ),
+				'aiPromptLabel'     => __( 'Describe your event (title, date, venue):', 'planit-event-manager' ),
 			)
 		);
 

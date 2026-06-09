@@ -1,0 +1,48 @@
+.twec-event-assistant {
+	box-sizing: border-box;
+	max-width: 100%;
+	margin: 1.25rem 0;
+	padding: 1rem;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.twec-event-assistant__form {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.75rem;
+}
+
+.twec-event-assistant__input {
+	flex: 1 1 12rem;
+	min-width: 0;
+	padding: 0.5rem 0.65rem;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+}
+
+.twec-event-assistant__submit {
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+}
+
+.twec-event-assistant__answer {
+	font-size: 0.95rem;
+	line-height: 1.5;
+	margin: 0.5rem 0;
+}
+
+.twec-event-assistant__event-list {
+	margin: 0.5rem 0 0;
+	padding-left: 1.25rem;
+}
+
+.twec-event-assistant__event-list a {
+	text-decoration: none;
+}
+
+.twec-event-assistant__event-list a:hover {
+	text-decoration: underline;
+}

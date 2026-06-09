@@ -16,8 +16,9 @@ if ( ! isset( $twec_compact_link_behavior ) ) {
 }
 $twec_compact_use_modal = ( 'page' !== $twec_compact_link_behavior );
 $twec_compact_dialog_id = 'twec-compact-dialog-' . wp_unique_id();
+$twec_compact_interactive = ! empty( $twec_compact_interactive );
 ?>
-<div class="twec-compact-list-wrapper" data-link-behavior="<?php echo esc_attr( $twec_compact_link_behavior ); ?>" data-dialog-id="<?php echo esc_attr( $twec_compact_dialog_id ); ?>">
+<div class="twec-compact-list-wrapper<?php echo $twec_compact_interactive ? ' twec-compact-list-wrapper--interactive' : ''; ?>" data-link-behavior="<?php echo esc_attr( $twec_compact_link_behavior ); ?>" data-dialog-id="<?php echo esc_attr( $twec_compact_dialog_id ); ?>"<?php echo $twec_compact_interactive ? ' data-twec-compact-interactive="1"' : ''; ?>>
 	<?php if ( $events_query->have_posts() ) : ?>
 		<table class="twec-compact-list" role="table">
 			<thead>

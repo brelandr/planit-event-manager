@@ -22,7 +22,11 @@ $seo_json_ld_graph       = isset( $settings['seo_json_ld_graph'] ) ? $settings['
 $seo_og                  = isset( $settings['seo_og'] ) ? $settings['seo_og'] : 'yes';
 $hierarchical_urls       = isset( $settings['hierarchical_event_urls'] ) ? $settings['hierarchical_event_urls'] : 'no';
 $seo_breadcrumb_json     = isset( $settings['seo_breadcrumb_json_ld'] ) ? $settings['seo_breadcrumb_json_ld'] : 'yes';
-$calendar_interactivity  = isset( $settings['calendar_interactivity'] ) ? $settings['calendar_interactivity'] : 'yes';
+$calendar_interactivity      = isset( $settings['calendar_interactivity'] ) ? $settings['calendar_interactivity'] : 'yes';
+$compact_list_interactivity  = isset( $settings['compact_list_interactivity'] ) ? $settings['compact_list_interactivity'] : '';
+if ( '' === $compact_list_interactivity ) {
+	$compact_list_interactivity = $calendar_interactivity;
+}
 $cookieless_view_counter = isset( $settings['cookieless_view_counter'] ) ? $settings['cookieless_view_counter'] : 'no';
 $payment_gateway         = isset( $settings['payment_gateway'] ) ? $settings['payment_gateway'] : 'none';
 $payment_mode            = isset( $settings['payment_mode'] ) ? $settings['payment_mode'] : 'test';
@@ -166,6 +170,16 @@ $ics_subscribe_url = add_query_arg( 'twec_feed', 'ics', home_url( '/' ) );
 						<option value="no" <?php selected( $calendar_interactivity, 'no' ); ?>><?php esc_html_e( 'Disabled (use jQuery / full request fallback only)', 'planit-event-manager' ); ?></option>
 					</select>
 					<p class="description"><?php esc_html_e( 'Client-side month navigation and filters for the block/shortcode calendar. Disable for older themes or if you need to test LCP; shortcode attribute interactivity="no" or block toggle can override per block.', 'planit-event-manager' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Compact list: enhanced preview', 'planit-event-manager' ); ?></th>
+				<td>
+					<select name="twec_settings[compact_list_interactivity]" id="compact_list_interactivity">
+						<option value="yes" <?php selected( $compact_list_interactivity, 'yes' ); ?>><?php esc_html_e( 'Enabled', 'planit-event-manager' ); ?></option>
+						<option value="no" <?php selected( $compact_list_interactivity, 'no' ); ?>><?php esc_html_e( 'Disabled', 'planit-event-manager' ); ?></option>
+					</select>
+					<p class="description"><?php esc_html_e( 'When enabled, the compact list popup fetches full event details from the REST API. Override per block or with shortcode interactivity="no".', 'planit-event-manager' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -383,6 +397,11 @@ $ics_subscribe_url = add_query_arg( 'twec_feed', 'ics', home_url( '/' ) );
 				</td>
 			</tr>
 		</table>
+		<?php
+		if ( is_readable( PLANIT_EVENT_MANAGER_DIR . 'admin/partials/twec-admin-settings-ai.php' ) ) {
+			include PLANIT_EVENT_MANAGER_DIR . 'admin/partials/twec-admin-settings-ai.php';
+		}
+		?>
 		<?php submit_button(); ?>
 	</form>
 	

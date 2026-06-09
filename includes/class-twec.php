@@ -92,6 +92,8 @@ if ( ! class_exists( 'TWEC', false ) ) {
 		require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-woocommerce.php';
 		require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-woo-series-pass.php';
 		require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-collab-rd.php';
+		require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-ai.php';
+		require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-abilities.php';
 		require_once PLANIT_EVENT_MANAGER_DIR . 'admin/class-twec-dashboard.php';
 		require_once PLANIT_EVENT_MANAGER_DIR . 'admin/class-twec-onboarding.php';
 
@@ -201,6 +203,8 @@ if ( ! class_exists( 'TWEC', false ) ) {
 			TWEC_Woo_Series_Pass::init();
 		}
 		TWEC_Collab_RD::init();
+		TWEC_AI::init();
+		TWEC_Abilities::init();
 		TWEC_Reminders::init();
 		TWEC_Privacy::init();
 	}
@@ -218,7 +222,7 @@ if ( ! class_exists( 'TWEC', false ) ) {
 	 * Called via admin_init hook to avoid issues during activation.
 	 */
 	public function init_meta_boxes() {
-		new TWEC_Meta_Boxes();
+		TWEC_Meta_Boxes::init();
 	}
 
 	/**

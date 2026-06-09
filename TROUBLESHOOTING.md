@@ -17,7 +17,7 @@ If you don't see the "Event Details" meta box with date/time fields when editing
 
 ### Solution 3: Check Plugin Activation
 1. Go to **Plugins** in WordPress admin
-2. Make sure "The WordPress Event Calendar" is **activated**
+2. Make sure "The Event Calendar" is **activated**
 3. If not activated, click **Activate**
 
 ### Solution 4: Clear Cache

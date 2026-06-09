@@ -51,3 +51,37 @@ function twec_calendar_should_use_interactivity( $shortcode_atts = array() ) {
 	$on = (bool) apply_filters( 'twec_use_interactivity', true, $shortcode_atts );
 	return (bool) $on;
 }
+
+/**
+ * Whether the compact event list should use enhanced client-side modal behavior.
+ *
+ * @param array $shortcode_atts Shortcode or block-mapped attributes.
+ * @return bool
+ */
+function twec_compact_should_use_interactivity( $shortcode_atts = array() ) {
+	if ( ! is_array( $shortcode_atts ) ) {
+		$shortcode_atts = array();
+	}
+
+	$settings = get_option( 'twec_settings', array() );
+	$opt      = isset( $settings['compact_list_interactivity'] ) ? (string) $settings['compact_list_interactivity'] : '';
+	if ( '' === $opt ) {
+		$opt = isset( $settings['calendar_interactivity'] ) ? (string) $settings['calendar_interactivity'] : 'yes';
+	}
+	if ( 'no' === $opt ) {
+		return false;
+	}
+
+	$inter = '';
+	if ( isset( $shortcode_atts['interactivity'] ) && '' !== (string) $shortcode_atts['interactivity'] ) {
+		$inter = strtolower( (string) $shortcode_atts['interactivity'] );
+	} elseif ( array_key_exists( 'enableInteractivity', $shortcode_atts ) ) {
+		$e = $shortcode_atts['enableInteractivity'];
+		$inter = is_bool( $e ) ? ( $e ? 'yes' : 'no' ) : strtolower( (string) $e );
+	}
+	if ( in_array( $inter, array( 'no', '0', 'false', 'off' ), true ) ) {
+		return false;
+	}
+
+	return (bool) apply_filters( 'twec_use_compact_interactivity', true, $shortcode_atts );
+}

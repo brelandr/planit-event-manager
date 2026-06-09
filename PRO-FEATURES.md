@@ -136,6 +136,18 @@ Get custom field value:
 $custom_value = TWEC_Custom_Fields::get( $event_id, 'field_name' );
 ```
 
+## RSVP door check-in & QR manifests (Premium)
+
+When Premium is licensed, each event can show **RSVP attendee tools** in the sidebar:
+
+1. **Download RSVP CSV** — guest emails, names, and per-guest check-in tokens.
+2. **Print QR manifest** — printable table with one signed QR (`planit1:` payload) per guest for faster entry.
+3. **Events → Door check-in** — staff page with camera scanning (HTTPS), paste-code, or manual email + token; check-ins are stored on the event (`_twec_rsvp_checkins`). Duplicate check-ins return HTTP 409 unless `twec_rsvp_checkin_allow_reentry` allows re-entry.
+
+REST: `POST /wp-json/planit/v1/rsvp/checkin` (alias `rsvp-scan`) with `wp_rest` nonce; body may include `scan` (full string) or `event_id` + `email` + `token`.
+
+See in-dashboard **Events → Documentation → RSVP & door check-in (Premium)** for the full admin guide.
+
 ## All Pro Features Summary
 
 ✅ **Import from The Events Calendar** - Migrate events from other plugins  
@@ -149,6 +161,7 @@ $custom_value = TWEC_Custom_Fields::get( $event_id, 'field_name' );
 ✅ **Featured Events Widget** - Display featured events  
 ✅ **Event Series Widget** - Display series events  
 ✅ **Countdown Widget** - Real-time countdown timer  
+✅ **RSVP door check-in & QR manifests** - Print guest QR tickets; scan at the door (Premium)  
 
 All features are included and ready to use!
 

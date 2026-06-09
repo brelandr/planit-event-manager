@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Handles cleanup tasks when the plugin is deactivated.
  */
+if ( ! class_exists( 'TWEC_Deactivator', false ) ) {
+
 class TWEC_Deactivator {
 
 	/**
@@ -26,4 +28,6 @@ class TWEC_Deactivator {
 		// Flush rewrite rules.
 		flush_rewrite_rules();
 	}
+}
+
 }

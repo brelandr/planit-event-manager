@@ -280,6 +280,7 @@ class TWEC_Shortcodes {
 				'tag'           => '',
 				'past_events'   => 'hide',
 				'link_behavior' => 'modal',
+				'interactivity' => '',
 			),
 			$atts,
 			'twec_compact_list'
@@ -294,6 +295,8 @@ class TWEC_Shortcodes {
 			$link_behavior = 'modal';
 		}
 		$link_behavior = (string) apply_filters( 'twec_compact_list_link_behavior', $link_behavior, $atts );
+		$use_interactive = function_exists( 'twec_compact_should_use_interactivity' )
+			&& twec_compact_should_use_interactivity( $atts );
 
 		$paged = get_query_var( 'paged' ) ? (int) get_query_var( 'paged' ) : 1;
 
@@ -301,6 +304,7 @@ class TWEC_Shortcodes {
 
 		$events_query               = new WP_Query( self::build_events_query_args( $per_page, $category, $tag, $hide_past, $paged ) );
 		$twec_compact_link_behavior = $link_behavior;
+		$twec_compact_interactive   = $use_interactive;
 
 		ob_start();
 		include PLANIT_EVENT_MANAGER_DIR . 'public/partials/twec-compact-list.php';

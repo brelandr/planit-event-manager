@@ -44,7 +44,9 @@ class TWEC_Premium {
 	 * @return bool True if feature is available, false otherwise.
 	 */
 	public static function is_available( $feature = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Parameter kept for API consistency.
-		// In free version, all premium features return false.
+		if ( class_exists( 'TWEC_License', false ) && method_exists( 'TWEC_License', 'is_licensed' ) && TWEC_License::is_licensed() ) {
+			return true;
+		}
 		return false;
 	}
 

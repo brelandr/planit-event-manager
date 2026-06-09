@@ -3,7 +3,7 @@
  * Plugin Name: PlanIt Event Manager
  * Plugin URI: https://wordpress.org/plugins/planit-event-manager
  * Description: A free event calendar plugin with calendar views (day, month), list view, venues, organizers, and more. Upgrade to Premium for advanced features!
- * Version: 1.0.15
+ * Version: 1.0.16
  * Author: Land Tech Web Designs, Corp
  * Author URI: https://landtechwebdesigns.com
  * License: GPL-2.0+
@@ -122,7 +122,7 @@ define( 'PLANIT_EVENT_MANAGER_BOOTSTRAP_DONE', true );
  * This plugin’s directory, basename, and file (always defined for activation hooks and path checks).
  */
 if ( ! defined( 'PLANIT_EVENT_MANAGER_VERSION' ) ) {
-	define( 'PLANIT_EVENT_MANAGER_VERSION', '1.0.15' );
+	define( 'PLANIT_EVENT_MANAGER_VERSION', '1.0.16' );
 }
 if ( ! defined( 'PLANIT_EVENT_MANAGER_FILE' ) ) {
 	define( 'PLANIT_EVENT_MANAGER_FILE', __FILE__ );
@@ -151,6 +151,22 @@ require_once PLANIT_EVENT_MANAGER_DIR . 'includes/planit-event-manager-helpers.p
  */
 require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-blocks-core.php';
 TWEC_Blocks_Core::init();
+
+/**
+ * AI + Abilities API always boot from the org package (companion to Premium).
+ */
+require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-settings.php';
+require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-event-datetime.php';
+require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-rest.php';
+require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-premium.php';
+require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-ai.php';
+require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-abilities.php';
+require_once PLANIT_EVENT_MANAGER_DIR . 'admin/class-twec-admin-event-list.php';
+require_once PLANIT_EVENT_MANAGER_DIR . 'admin/class-twec-meta-boxes.php';
+TWEC_AI::init();
+TWEC_Abilities::init();
+TWEC_Admin_Event_List::init();
+add_action( 'admin_init', array( 'TWEC_Meta_Boxes', 'init' ), 1 );
 
 /**
  * Whether PlanIt Event Manager Premium is active (site or network).
@@ -222,8 +238,12 @@ function planit_event_manager_premium_is_being_activated() {
  * Activation hook.
  */
 function twec_activate() {
-	require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-activator.php';
-	TWEC_Activator::activate();
+	if ( ! class_exists( 'TWEC_Activator', false ) ) {
+		require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-activator.php';
+	}
+	if ( class_exists( 'TWEC_Activator', false ) ) {
+		TWEC_Activator::activate();
+	}
 }
 register_activation_hook( __FILE__, 'twec_activate' );
 
@@ -231,8 +251,12 @@ register_activation_hook( __FILE__, 'twec_activate' );
  * Deactivation hook.
  */
 function twec_deactivate() {
-	require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-deactivator.php';
-	TWEC_Deactivator::deactivate();
+	if ( ! class_exists( 'TWEC_Deactivator', false ) ) {
+		require_once PLANIT_EVENT_MANAGER_DIR . 'includes/class-twec-deactivator.php';
+	}
+	if ( class_exists( 'TWEC_Deactivator', false ) ) {
+		TWEC_Deactivator::deactivate();
+	}
 }
 register_deactivation_hook( __FILE__, 'twec_deactivate' );
 

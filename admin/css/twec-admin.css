@@ -39,6 +39,33 @@
     max-width: 800px;
 }
 
+/* Events list — start/end date filters */
+.twec-event-list-date-filters {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    align-items: center;
+    margin: 0 8px 0 0;
+    vertical-align: middle;
+}
+
+.twec-event-list-date-filters__group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: center;
+}
+
+.twec-event-list-date-filters label {
+    font-weight: 600;
+    margin: 0;
+}
+
+.twec-event-list-date-filters input[type="date"] {
+    max-width: 11.5em;
+    margin-right: 4px;
+}
+
 /* Event Data Meta Box - Prominent Styling */
 #twec_event_details {
     border: 2px solid #0073aa !important;
@@ -76,10 +103,32 @@
     font-size: 20px !important;
 }
 
+:root {
+    --twec-event-metabox-max-height: 50vh;
+}
+
 #twec_event_details .inside {
     background: #ffffff !important;
     padding: 20px !important;
     margin: 0 !important;
+    box-sizing: border-box;
+}
+
+/* Cap Event Data body height so the editor/description stays visible above the footer. */
+#twec_event_details:not(.closed) .inside,
+#twec_event_details.twec-event-details-sized .inside {
+    max-height: var(--twec-event-metabox-max-height);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.edit-post-meta-boxes-area #twec_event_details,
+.interface-interface-skeleton__footer #twec_event_details {
+    width: 100%;
+}
+
+.twec-ai-assist-preview .components-textarea-control__input {
+    min-height: 10rem;
 }
 
 /* Ensure meta box is expanded by default */

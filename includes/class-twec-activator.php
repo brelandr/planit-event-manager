@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Handles activation tasks including post type registration and default options setup.
  */
+if ( ! class_exists( 'TWEC_Activator', false ) ) {
+
 class TWEC_Activator {
 
 	/**
@@ -68,4 +70,6 @@ class TWEC_Activator {
 		 * Note: Index names and table prefix may vary. Use $wpdb->prefix for the correct table name.
 		 */
 	}
+}
+
 }
